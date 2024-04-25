@@ -3,7 +3,7 @@ package hub
 import "encoding/json"
 
 type Message struct {
-	Type    string
+	Topic   string
 	Payload interface{}
 }
 

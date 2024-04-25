@@ -10,11 +10,11 @@ type ListenerItem struct {
 	Callback ListenerCallback
 }
 
-var registeredListeners = make(map[string][]ListenerItem)
+var registeredListeners = make(map[string][]*ListenerItem)
 
 func AddTopicListener(topic string, callback ListenerCallback) string {
 	id := uuid.New().String()
-	registeredListeners[topic] = append(registeredListeners[topic], ListenerItem{
+	registeredListeners[topic] = append(registeredListeners[topic], &ListenerItem{
 		ID:       id,
 		Topic:    topic,
 		Callback: callback,
@@ -42,7 +42,7 @@ func RemoveListener(id string) {
 }
 
 func handleBroadcast(msg *Message) {
-	listeners := registeredListeners[msg.Type]
+	listeners := registeredListeners[msg.Topic]
 	for _, listener := range listeners {
 		listener.Callback(msg)
 	}

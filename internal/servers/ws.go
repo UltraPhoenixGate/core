@@ -32,7 +32,7 @@ func readPump(client *hub.Client, conn *websocket.Conn) {
 		msg, err := hub.PraseMessageByte(payload)
 		if err != nil {
 			client.Send(&hub.Message{
-				Type:    "error",
+				Topic:   "error",
 				Payload: "Failed to parse message",
 			})
 		}

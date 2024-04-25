@@ -36,7 +36,7 @@ func (h *Hub) Run() {
 			logrus.Debug("broadcast message: ", message.ToJson())
 			for _, client := range h.clientMap {
 				// # 通配符表示订阅所有主题
-				if client.Topics[message.Type] || client.Topics["#"] {
+				if client.Topics[message.Topic] || client.Topics["#"] {
 					select {
 					case client.SendChan <- message:
 					default:
