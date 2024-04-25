@@ -35,7 +35,8 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			logrus.Debug("broadcast message: ", message.ToJson())
 			for _, client := range h.clientMap {
-				if client.Topics[message.Type] {
+				// # 通配符表示订阅所有主题
+				if client.Topics[message.Type] || client.Topics["#"] {
 					select {
 					case client.SendChan <- message:
 					default:
@@ -68,6 +69,7 @@ func (h *Hub) Unregister(client *Client) {
 }
 
 func (h *Hub) Broadcast(message *Message) {
+	handleBroadcast(message)
 	select {
 	case h.broadcast <- message:
 	default:
