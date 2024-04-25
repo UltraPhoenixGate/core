@@ -67,22 +67,22 @@ func writePump(client *hub.Client, conn *websocket.Conn) {
 	}
 }
 
-func wsHandler(w http.ResponseWriter, r *http.Request, bus *hub.Hub) {
+func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to upgrade connection to websocket")
 		return
 	}
-	client := hub.NewClient(uuid.New().String(), bus)
-	bus.Register(client)
+	client := hub.NewClient(uuid.New().String(), h)
+	h.Register(client)
 	go readPump(client, conn)
 	go writePump(client, conn)
 }
 
-func ServeWs(bus *hub.Hub) {
+func ServeWs(h *hub.Hub) {
 	httpMap := http.NewServeMux()
 	httpMap.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		wsHandler(w, r, bus) // Pass the hub to the wsHandler function
+		wsHandler(w, r, h) // Pass the hub to the wsHandler function
 	})
 	logrus.Info("Starting websocket server on :8080")
 	http.ListenAndServe(":8080", httpMap)

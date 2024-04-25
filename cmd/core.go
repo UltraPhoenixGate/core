@@ -6,9 +6,9 @@ import (
 )
 
 func Bootstrap() {
-	globalHub := hub.NewHub()
-	go globalHub.Run()
-	go servers.ServeWs(globalHub)
+	h := hub.NewHub()
+	go h.Run()
+	go servers.ServeWs(h)
 
 	// Block forever
 	select {}
