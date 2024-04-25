@@ -2,6 +2,7 @@ package servers
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 	"ultraphx-core/internal/hub"
 
@@ -84,6 +85,32 @@ func ServeWs(h *hub.Hub) {
 	httpMap.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		wsHandler(w, r, h) // Pass the hub to the wsHandler function
 	})
+	// 反向ws
+	httpMap.HandleFunc("/ws-reverse", func(w http.ResponseWriter, r *http.Request) {
+		wsUrl := r.URL.Query().Get("url")
+		if wsUrl == "" {
+			http.Error(w, "url is required", http.StatusBadRequest)
+			return
+		}
+		u, err := url.Parse(wsUrl)
+		if err != nil {
+			http.Error(w, "url is invalid", http.StatusBadRequest)
+			return
+		}
+		ConnectWs(u, h)
+	})
 	logrus.Info("Starting websocket server on :8080")
 	http.ListenAndServe(":8080", httpMap)
+}
+
+func ConnectWs(u *url.URL, h *hub.Hub) {
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to connect to websocket")
+		return
+	}
+	client := hub.NewClient(uuid.New().String(), h)
+	h.Register(client)
+	go readPump(client, conn)
+	go writePump(client, conn)
 }
