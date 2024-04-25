@@ -40,9 +40,8 @@ func SubscribeToTopic(client mqtt.Client, topic string) {
 }
 
 func ServeMQTT(h *hub.Hub) {
-	mqttURI := "tcp://localhost:1883" // replace with your MQTT broker URI
+	mqttURI := "tcp://broker.emqx.io:1883" // replace with your MQTT broker URI
 	client := ConnectMQTTBroker(mqttURI, h)
 	SubscribeToTopic(client, "#") // subscribe to all topics
-
 	logrus.Info("Connected to MQTT broker and subscribed to topic")
 }
