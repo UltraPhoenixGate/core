@@ -2,6 +2,10 @@ package hub
 
 import "github.com/sirupsen/logrus"
 
+var MAX_REGISTER_CHANNEL_SIZE = 100
+var MAX_UNREGISTER_CHANNEL_SIZE = 100
+var MAX_BROADCAST_CHANNEL_SIZE = 100
+
 type Hub struct {
 	clientMap  map[string]*Client
 	register   chan *Client
@@ -12,9 +16,9 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		clientMap:  make(map[string]*Client),
-		register:   make(chan *Client, 100),  // 设置缓冲区大小为100
-		unregister: make(chan *Client, 100),  // 设置缓冲区大小为100
-		broadcast:  make(chan *Message, 100), // 设置缓冲区大小为100
+		register:   make(chan *Client, MAX_REGISTER_CHANNEL_SIZE),
+		unregister: make(chan *Client, MAX_UNREGISTER_CHANNEL_SIZE),
+		broadcast:  make(chan *Message, MAX_BROADCAST_CHANNEL_SIZE),
 	}
 }
 
