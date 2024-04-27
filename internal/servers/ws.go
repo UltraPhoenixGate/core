@@ -36,7 +36,7 @@ func readPump(client *hub.Client, conn *websocket.Conn) {
 				Payload: "Failed to parse message",
 			})
 		}
-		client.Hub.Broadcast(msg)
+		client.Broadcast(msg)
 	}
 }
 
