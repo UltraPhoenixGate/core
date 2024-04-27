@@ -69,7 +69,7 @@ func (h *Hub) Unregister(client *Client) {
 }
 
 func (h *Hub) Broadcast(message *Message) {
-	handleBroadcast(message)
+	go handleBroadcast(message) // not block
 	select {
 	case h.broadcast <- message:
 	default:
