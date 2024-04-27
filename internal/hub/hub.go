@@ -1,6 +1,10 @@
 package hub
 
-import "github.com/sirupsen/logrus"
+import (
+	"strings"
+
+	"github.com/sirupsen/logrus"
+)
 
 var MAX_REGISTER_CHANNEL_SIZE = 100
 var MAX_UNREGISTER_CHANNEL_SIZE = 100
@@ -34,22 +38,51 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.broadcast:
 			logrus.Debug("broadcast message: ", message.ToJson())
-			for _, client := range h.clientMap {
-				// # 通配符表示订阅所有主题
-				if client.Topics[message.Topic] || client.Topics["#"] {
-					select {
-					case client.SendChan <- message:
-					default:
-						close(client.SendChan) // 关闭通道前先检查是否已关闭，避免重复关闭
-						if !isClosed(client.SendChan) {
-							close(client.SendChan)
-						}
-						delete(h.clientMap, client.ID)
-					}
-				}
+			h.handleBroadcast(message)
+		}
+	}
+}
+
+func (h *Hub) handleBroadcast(message *Message) {
+	for _, client := range h.clientMap {
+		if isValidTopicMatch(message.Topic, client) {
+			select {
+			case client.SendChan <- message:
+			default:
+				h.closeClient(client)
 			}
 		}
 	}
+}
+
+func isValidTopicMatch(topic string, client *Client) bool {
+	if client.Topics["#"] {
+		return true
+	}
+
+	if client.Topics[topic] {
+		return true
+	}
+
+	// Check for wildcard subscriptions
+	for subscribedTopic := range client.Topics {
+		if strings.HasSuffix(subscribedTopic, "#") {
+			baseTopic := strings.TrimSuffix(subscribedTopic, "#")
+			if strings.HasPrefix(topic, baseTopic) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (h *Hub) closeClient(client *Client) {
+	close(client.SendChan)
+	if !isClosed(client.SendChan) {
+		close(client.SendChan)
+	}
+	delete(h.clientMap, client.ID)
 }
 
 func (h *Hub) Register(client *Client) {
@@ -69,7 +102,7 @@ func (h *Hub) Unregister(client *Client) {
 }
 
 func (h *Hub) Broadcast(message *Message) {
-	go handleBroadcast(message) // not block
+	go handleBroadcastListener(message) // not block
 	select {
 	case h.broadcast <- message:
 	default:

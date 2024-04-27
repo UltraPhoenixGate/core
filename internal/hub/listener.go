@@ -41,7 +41,7 @@ func RemoveListener(id string) {
 	RemoveTopicListener("#", id)
 }
 
-func handleBroadcast(msg *Message) {
+func handleBroadcastListener(msg *Message) {
 	listeners := registeredListeners[msg.Topic]
 	for _, listener := range listeners {
 		listener.Callback(msg)
