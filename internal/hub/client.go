@@ -26,13 +26,11 @@ func NewClient(id string, hub *Hub) *Client {
 		id = uuid.New().String()
 	}
 	return &Client{
-		ID:       id,
-		SendChan: make(chan *Message),
-		Topics:   make(map[string]bool),
-		Hub:      hub,
-		Permissions: map[string][]PermissionType{
-			"error": {PermissionTypeRead},
-		},
+		ID:          id,
+		SendChan:    make(chan *Message),
+		Topics:      make(map[string]bool),
+		Hub:         hub,
+		Permissions: map[string][]PermissionType{},
 	}
 }
 

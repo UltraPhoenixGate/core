@@ -69,6 +69,8 @@ func writePump(client *hub.Client, conn *websocket.Conn) {
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
+	// TODO: Add authentication
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to upgrade connection to websocket")
