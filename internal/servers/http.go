@@ -3,6 +3,7 @@ package servers
 import (
 	"io"
 	"net/http"
+	"ultraphx-core/internal/api"
 	"ultraphx-core/internal/hub"
 
 	"github.com/sirupsen/logrus"
@@ -38,6 +39,11 @@ func ServeHttp(h *hub.Hub) {
 	httpMap.HandleFunc("/broadcast", func(w http.ResponseWriter, r *http.Request) {
 		httpBroadcastHandler(w, r, h) // Pass the hub to the httpBroadcastHandler function
 	})
+
+	// plugin register
+	httpMap.HandleFunc("/plugin/register", api.HandlePluginRegister)
+	httpMap.HandleFunc("/plugin/check-active", api.HandlePluginCheckActive)
+
 	logrus.Info("Starting HTTP server on :8081")
 	http.ListenAndServe(":8081", httpMap)
 }
