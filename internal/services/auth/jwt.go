@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"encoding/json"
 	"time"
 	"ultraphx-core/internal/models"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
+	"github.com/sirupsen/logrus"
 )
 
 type JwtPayload struct {
@@ -26,7 +28,6 @@ func CreateJWEToken(payload JwtPayload) (string, error) {
 			Issuer:    "Auth Service",
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Expiry:    jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
-			ID:        payload.ClientID,
 		},
 		JwtPayload: payload,
 	}
@@ -77,13 +78,21 @@ func RefreshJWEToken(rawToken string) (string, error) {
 }
 
 func ParseJWEToken(rawToken string) (*JwtClaims, error) {
-	token, err := jwt.ParseEncrypted(rawToken, []jose.KeyAlgorithm{jose.RSA_OAEP}, []jose.ContentEncryption{jose.A128GCM})
+	token, err := jose.ParseEncrypted(rawToken, []jose.KeyAlgorithm{jose.RSA_OAEP}, []jose.ContentEncryption{jose.A128GCM})
 	if err != nil {
+		logrus.WithError(err).Error("Failed to parse token")
 		return nil, err
 	}
 
 	claims := JwtClaims{}
-	if err := token.Claims(GetPrivateKey(), &claims); err != nil {
+	tokenData, err := token.Decrypt(GetPrivateKey())
+	if err != nil {
+		logrus.WithError(err).Error("Failed to decrypt token")
+		return nil, err
+	}
+
+	if err := json.Unmarshal(tokenData, &claims); err != nil {
+		logrus.WithError(err).Error("Failed to unmarshal token")
 		return nil, err
 	}
 

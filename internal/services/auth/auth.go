@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"ultraphx-core/internal/models"
+
+	"github.com/sirupsen/logrus"
 )
 
 func CheckJwtToken(token string) (bool, error) {
@@ -20,8 +22,9 @@ func CheckJwtToken(token string) (bool, error) {
 		ID: claims.ClientID,
 	}
 
-	if err := client.Query().Find(&client); err != nil {
-		return false, err.Error
+	if err := client.Query().Find(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		return false, err
 	}
 
 	if client.Status != models.ClientStatusActive {

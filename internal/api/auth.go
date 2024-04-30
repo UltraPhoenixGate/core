@@ -14,7 +14,7 @@ import (
 func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name        string   `json:"name" validate:"required"`
-		Description string   `json:"description" validate:"required"`
+		Description string   `json:"description"`
 		Permissions []string `json:"permissions"`
 	}
 	if err := validator.ShouldBind(r, &req); err != nil {
@@ -38,6 +38,7 @@ func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 		Description: req.Description,
 		Type:        models.ClientTypePlugin,
 		Permissions: clientPermissions,
+		Status:      models.ClientStatusPending,
 	}
 	err := client.Query().Create(&client).Error
 	if err != nil {
