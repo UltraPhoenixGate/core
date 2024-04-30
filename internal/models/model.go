@@ -7,6 +7,10 @@ import (
 
 var DB *gorm.DB
 
+func init() {
+	Setup()
+}
+
 // Setup initializes the database instance
 func Setup() {
 	db, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{})

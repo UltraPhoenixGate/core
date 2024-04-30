@@ -1,11 +1,11 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/services/auth"
 	"ultraphx-core/pkg/resp"
+	"ultraphx-core/pkg/validator"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -13,14 +13,15 @@ import (
 
 func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Name        string   `json:"name"`
-		Description string   `json:"description"`
+		Name        string   `json:"name" validate:"required"`
+		Description string   `json:"description" validate:"required"`
 		Permissions []string `json:"permissions"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := validator.ShouldBind(r, &req); err != nil {
 		resp.Error(w, "Invalid request")
 		return
 	}
+
 	clientPermissions := make([]models.Permission, 0, len(req.Permissions))
 	for _, p := range req.Permissions {
 		permission, err := models.PrasePermission(p)
