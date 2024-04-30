@@ -100,7 +100,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 	go writePump(client, conn)
 }
 
-func handelPluginRegister(w http.ResponseWriter, r *http.Request) {
+func handlePluginRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
@@ -144,7 +144,7 @@ func handelPluginRegister(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func handelPluginCheckActive(w http.ResponseWriter, r *http.Request) {
+func handlePluginCheckActive(w http.ResponseWriter, r *http.Request) {
 	jwtStr := r.Header.Get("Authorization")
 	if jwtStr == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -184,8 +184,8 @@ func ServeWs(h *hub.Hub) {
 		ConnectWs(u, h)
 	})
 	// plugin register
-	httpMap.HandleFunc("/plugin/register", handelPluginRegister)
-	httpMap.HandleFunc("/plugin/check-active", handelPluginCheckActive)
+	httpMap.HandleFunc("/plugin/register", handlePluginRegister)
+	httpMap.HandleFunc("/plugin/check-active", handlePluginCheckActive)
 	logrus.Info("Starting websocket server on :8080")
 	http.ListenAndServe(":8080", httpMap)
 }
