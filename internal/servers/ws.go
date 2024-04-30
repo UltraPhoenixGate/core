@@ -1,10 +1,14 @@
 package servers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"time"
 	"ultraphx-core/internal/hub"
+	"ultraphx-core/internal/models"
+	"ultraphx-core/internal/services/auth"
+	"ultraphx-core/pkg/resp"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -69,7 +73,21 @@ func writePump(client *hub.Client, conn *websocket.Conn) {
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
-	// TODO: Add authentication
+	// authentication
+	jwtStr := r.Header.Get("Authorization")
+	if jwtStr == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	ok, err := auth.CheckJwtToken(jwtStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -80,6 +98,70 @@ func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 	h.Register(client)
 	go readPump(client, conn)
 	go writePump(client, conn)
+}
+
+func handelPluginRegister(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Permissions []string `json:"permissions"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		resp.Error(w, "Invalid request")
+		return
+	}
+	clientPermissions := make([]models.Permission, 0, len(req.Permissions))
+	for _, p := range req.Permissions {
+		permission, err := models.PrasePermission(p)
+		if err != nil {
+			resp.Error(w, "Invalid permission")
+			return
+		}
+		clientPermissions = append(clientPermissions, permission)
+	}
+
+	client := models.Client{
+		ID:          uuid.New().String(),
+		Name:        req.Name,
+		Description: req.Description,
+		Type:        models.ClientTypePlugin,
+		Permissions: clientPermissions,
+	}
+	client.Query().Create(&client)
+
+	token, err := auth.CreateJWEToken(auth.JwtPayload{
+		ClientID: client.ID,
+		Name:     client.Name,
+		Type:     client.Type,
+	})
+
+	if err != nil {
+		resp.Error(w, "Failed to create token")
+		return
+	}
+	resp.OK(w, resp.H{
+		"token": token,
+	})
+}
+
+func handelPluginCheckActive(w http.ResponseWriter, r *http.Request) {
+	jwtStr := r.Header.Get("Authorization")
+	if jwtStr == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	ok, err := auth.CheckJwtToken(jwtStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	resp.OK(w, resp.H{
+		"success": true,
+	})
 }
 
 func ServeWs(h *hub.Hub) {
@@ -101,6 +183,9 @@ func ServeWs(h *hub.Hub) {
 		}
 		ConnectWs(u, h)
 	})
+	// plugin register
+	httpMap.HandleFunc("/plugin/register", handelPluginRegister)
+	httpMap.HandleFunc("/plugin/check-active", handelPluginCheckActive)
 	logrus.Info("Starting websocket server on :8080")
 	http.ListenAndServe(":8080", httpMap)
 }

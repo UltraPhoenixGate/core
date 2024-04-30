@@ -1,14 +1,30 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"strings"
+
+	"gorm.io/gorm"
+)
 
 type Client struct {
 	gorm.Model
 	ID          string `gorm:"primarykey"`
 	Name        string
+	Description string
+	Status      ClientStatus
 	Type        ClientType
 	Permissions []Permission `gorm:"foreignKey:ClientID"`
 }
+
+type ClientStatus string
+
+const (
+	ClientStatusPending  ClientStatus = "pending"
+	ClientStatusActive   ClientStatus = "active"
+	ClientStatusExpired  ClientStatus = "expired"
+	ClientStatusDisabled ClientStatus = "disabled"
+)
 
 type ClientType string
 
@@ -30,6 +46,37 @@ const (
 	PermissionTypeRead PermissionType = iota + 1
 	PermissionTypeWrite
 )
+
+func (p PermissionType) String() string {
+	switch p {
+	case PermissionTypeRead:
+		return "r"
+	case PermissionTypeWrite:
+		return "w"
+	default:
+		return ""
+	}
+}
+
+func (p Permission) String() string {
+	// ex: data-rw
+	return p.Topic + "-" + p.Type.String()
+}
+
+func PrasePermission(s string) (Permission, error) {
+	if strings.Count(s, "-") != 1 {
+		return Permission{}, errors.New("invalid permission string")
+	}
+	topic := strings.Split(s, "-")[0]
+	pType := strings.Split(s, "-")[1]
+	switch pType {
+	case "r":
+		return Permission{Topic: topic, Type: PermissionTypeRead}, nil
+	case "w":
+		return Permission{Topic: topic, Type: PermissionTypeWrite}, nil
+	}
+	return Permission{}, errors.New("invalid permission type")
+}
 
 func (c *Client) Query() *gorm.DB {
 	return DB.Model(c)
