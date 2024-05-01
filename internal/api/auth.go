@@ -11,6 +11,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var httpMux = http.NewServeMux()
+
+func GetHttpMux() *http.ServeMux {
+	return httpMux
+}
+
+func init() {
+	httpMux.HandleFunc("/plugin/register", HandlePluginRegister)
+	httpMux.HandleFunc("/plugin/check_active", HandlePluginCheckActive)
+}
+
 func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name        string   `json:"name" validate:"required"`

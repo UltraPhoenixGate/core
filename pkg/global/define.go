@@ -1,8 +1,10 @@
 package global
 
-type SensorData struct {
-	SensorID string                 `json:"sensor_id"`
-	Data     map[string]interface{} `json:"data"`
+type SensorData = map[string]float64
+
+type SensorPayload struct {
+	SensorID string     `json:"sensor_id"`
+	Data     SensorData `json:"data"`
 }
 
 type SensorEvent struct {

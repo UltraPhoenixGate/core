@@ -35,14 +35,10 @@ func httpBroadcastHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 }
 
 func ServeHttp(h *hub.Hub) {
-	httpMap := http.NewServeMux()
+	httpMap := api.GetHttpMux()
 	httpMap.HandleFunc("/broadcast", func(w http.ResponseWriter, r *http.Request) {
 		httpBroadcastHandler(w, r, h) // Pass the hub to the httpBroadcastHandler function
 	})
-
-	// plugin register
-	httpMap.HandleFunc("/plugin/register", api.HandlePluginRegister)
-	httpMap.HandleFunc("/plugin/check-active", api.HandlePluginCheckActive)
 
 	logrus.Info("Starting HTTP server on :8081")
 	http.ListenAndServe(":8081", httpMap)

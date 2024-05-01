@@ -5,6 +5,7 @@
     "logrus",
     "Mqtt",
     "ultraphx",
-    "upgrader"
+    "upgrader",
+    "vmagent"
   ]
 }

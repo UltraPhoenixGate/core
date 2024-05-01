@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	"ultraphx-core/internal/api"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/services/auth"
 
@@ -118,9 +117,6 @@ func ServeWs(h *hub.Hub) {
 		}
 		ConnectWs(u, h)
 	})
-	// plugin register
-	httpMap.HandleFunc("/plugin/register", api.HandlePluginRegister)
-	httpMap.HandleFunc("/plugin/check-active", api.HandlePluginCheckActive)
 	logrus.Info("Starting websocket server on :8080")
 	http.ListenAndServe(":8080", httpMap)
 }
