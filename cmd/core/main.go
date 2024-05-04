@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"ultraphx-core/internal/hub"
@@ -20,4 +20,8 @@ func Bootstrap() {
 
 	// Block forever
 	select {}
+}
+
+func main() {
+	Bootstrap()
 }
