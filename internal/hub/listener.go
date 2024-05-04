@@ -2,7 +2,7 @@ package hub
 
 import "github.com/google/uuid"
 
-type ListenerCallback func(msg *Message)
+type ListenerCallback func(h *Hub, msg *Message)
 
 type ListenerItem struct {
 	ID       string
@@ -41,15 +41,15 @@ func RemoveListener(id string) {
 	RemoveTopicListener("#", id)
 }
 
-func handleBroadcastListener(msg *Message) {
+func handleBroadcastListener(h *Hub, msg *Message) {
 	listeners := registeredListeners[msg.Topic]
 	for _, listener := range listeners {
-		listener.Callback(msg)
+		listener.Callback(h, msg)
 	}
 
 	// broadcast to # listeners
 	listeners = registeredListeners["#"]
 	for _, listener := range listeners {
-		listener.Callback(msg)
+		listener.Callback(h, msg)
 	}
 }

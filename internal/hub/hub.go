@@ -27,6 +27,7 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Run() {
+	logrus.Info("Pub/Sub hub is running")
 	for {
 		select {
 		case client := <-h.register:
@@ -102,7 +103,7 @@ func (h *Hub) Unregister(client *Client) {
 }
 
 func (h *Hub) Broadcast(message *Message) {
-	go handleBroadcastListener(message) // not block
+	go handleBroadcastListener(h, message) // not block
 	select {
 	case h.broadcast <- message:
 	default:

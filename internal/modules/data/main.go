@@ -1,4 +1,4 @@
-package agent
+package data
 
 import (
 	"bytes"
@@ -59,9 +59,13 @@ func writeToVM(data string) {
 	}
 }
 
-func handleDataListener(msg *hub.Message) {
+func handleDataListener(h *hub.Hub, msg *hub.Message) {
 	// handle data message
 	payload := msg.Payload.(global.SensorPayload)
+	if payload.Type != global.SensorPayloadTypeData {
+		return
+	}
+
 	client := models.Client{
 		ID: payload.SensorID,
 	}
@@ -74,7 +78,7 @@ func handleDataListener(msg *hub.Message) {
 		"name":      client.Name,
 	}
 
-	timeSeriesData, err := ConvertToTimeSeries(payload.Data, meta)
+	timeSeriesData, err := ConvertToTimeSeries(payload.Data.(global.SensorData), meta)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to convert to time series")
 		return
@@ -85,5 +89,6 @@ func handleDataListener(msg *hub.Message) {
 }
 
 func Setup() {
-	hub.AddTopicListener("data", handleDataListener)
+	hub.AddTopicListener("data::#", handleDataListener)
+	logrus.Info("Data module ready")
 }
