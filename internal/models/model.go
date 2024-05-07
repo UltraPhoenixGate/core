@@ -28,6 +28,10 @@ func migrate(db *gorm.DB, models ...interface{}) {
 	}
 }
 
+func AutoMigrate(models ...interface{}) {
+	migrate(DB, models...)
+}
+
 // Migration migrate the schema
 func Migration(db *gorm.DB) {
 	// Migrate the schema

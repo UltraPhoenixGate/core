@@ -1,5 +1,23 @@
 package alert
 
+import (
+	"ultraphx-core/internal/models"
+
+	"gorm.io/gorm"
+)
+
+// alert
+type AlertRecord struct {
+	gorm.Model
+	ClientID string    `json:"client_id"`
+	RuleName string    `json:"rule_name"`
+	Level    AlertType `json:"level"`
+}
+
+func (a *AlertRecord) Query() *gorm.DB {
+	return models.DB.Model(a)
+}
+
 type AlertType string
 
 const (
@@ -8,13 +26,13 @@ const (
 )
 
 type AlertRule struct {
-	Type        AlertRuleType
-	Name        string
-	Summary     string
-	Description string
-	Level       AlertType
-	Conditions  []AlertRuleCondition
-	Actions     []AlertAction
+	Type        AlertRuleType        `json:"type" validate:"required"`
+	Name        string               `json:"name" validate:"required"`
+	Summary     string               `json:"summary"`
+	Description string               `json:"description"`
+	Level       AlertType            `json:"level" validate:"required"`
+	Conditions  []AlertRuleCondition `json:"conditions" validate:"required"`
+	Actions     []AlertAction        `json:"actions"`
 }
 
 type AlertRuleType string
@@ -25,10 +43,10 @@ const (
 )
 
 type AlertRuleCondition struct {
-	SensorID string
-	Metric   string
-	Type     AlertRuleConditionType
-	Payload  any
+	SensorID string                 `json:"sensor_id" validate:"required"`
+	Metric   string                 `json:"metric" validate:"required"`
+	Type     AlertRuleConditionType `json:"type" validate:"required"`
+	Payload  any                    `json:"payload" validate:"required"`
 }
 
 type AlertRuleConditionType string
@@ -39,8 +57,8 @@ const (
 )
 
 type AlertRuleConditionPayloadOperator struct {
-	Operator AlertRuleConditionOperator
-	Value    float64
+	Operator AlertRuleConditionOperator `json:"operator" validate:"required"`
+	Value    float64                    `json:"value" validate:"required"`
 }
 
 type AlertRuleConditionOperator string

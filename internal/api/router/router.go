@@ -1,10 +1,7 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 var router *mux.Router
@@ -23,10 +20,4 @@ func GetRouter() *mux.Router {
 
 func GetAuthRouter() *mux.Router {
 	return authRouter
-}
-
-func Start() {
-	// Start the API server
-	logrus.Info("Starting API server on :8080")
-	http.ListenAndServe(":8080", router)
 }

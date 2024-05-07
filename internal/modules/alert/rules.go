@@ -11,13 +11,13 @@ import (
 
 const baseConfigPath = "config/alert/rules"
 
-var rules = []AlertRule{}
+var rules = []*AlertRule{}
 
 func init() {
 	RefreshRules()
 }
 
-func GetRules() []AlertRule {
+func GetRules() []*AlertRule {
 	return rules
 }
 
@@ -33,7 +33,7 @@ func RefreshRules() {
 		logrus.WithError(err).Error("Failed to read alert rules directory")
 	}
 
-	rules = []AlertRule{}
+	rules = []*AlertRule{}
 	for _, ruleFile := range ruleFiles {
 		if ruleFile.IsDir() {
 			continue
@@ -47,23 +47,23 @@ func RefreshRules() {
 	}
 }
 
-func LoadRule(name string) (AlertRule, error) {
+func LoadRule(name string) (*AlertRule, error) {
 	filePath := filepath.Join(baseConfigPath, name)
 	ruleFile, err := os.Open(filePath)
 	if err != nil {
-		return AlertRule{}, err
+		return &AlertRule{}, err
 	}
 	defer ruleFile.Close()
 
 	rule := AlertRule{}
 	if err := json.NewDecoder(ruleFile).Decode(&rule); err != nil {
-		return AlertRule{}, err
+		return &AlertRule{}, err
 	}
 
-	return rule, nil
+	return &rule, nil
 }
 
-func AddRule(rule AlertRule) error {
+func AddRule(rule *AlertRule) error {
 	// if rule already exists, return error
 	for _, r := range rules {
 		if r.Name == rule.Name {

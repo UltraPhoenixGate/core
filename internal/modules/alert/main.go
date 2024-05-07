@@ -1,7 +1,9 @@
 package alert
 
 import (
+	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/hub"
+	"ultraphx-core/internal/models"
 	"ultraphx-core/pkg/global"
 
 	"github.com/sirupsen/logrus"
@@ -73,5 +75,15 @@ func isMatched(condition *AlertRuleCondition, payload *global.SensorPayload) boo
 
 func Setup() {
 	hub.AddTopicListener("data::#", handleAlertRT)
+
+	// migrate
+	models.AutoMigrate(&AlertRecord{})
+
+	authRouter := router.GetAuthRouter()
+	authRouter.HandleFunc("/alert/rules", GetAlertRules).Methods("GET")
+	authRouter.HandleFunc("/alert/rule", AddAlertRule).Methods("POST")
+	authRouter.HandleFunc("/alert/rule", GetRule).Methods("GET")
+
+	authRouter.HandleFunc("/alert/records", GetAlertRecords).Methods("POST")
 	logrus.Info("Alert module ready")
 }
