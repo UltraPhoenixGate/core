@@ -14,8 +14,10 @@ func Bootstrap() {
 	modules.Setup()
 
 	// Start all servers
-	go servers.ServeWs(h)
-	go servers.ServeHttp(h)
+	servers.SetupWs(h)
+	servers.SetupHttp(h)
+
+	go servers.ServeHTTP(h)
 	go servers.ServeMQTT(h)
 
 	// Block forever

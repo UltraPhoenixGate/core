@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/services/auth"
 	"ultraphx-core/pkg/resp"
@@ -11,15 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var httpMux = http.NewServeMux()
-
-func GetHttpMux() *http.ServeMux {
-	return httpMux
-}
-
 func init() {
-	httpMux.HandleFunc("/plugin/register", HandlePluginRegister)
-	httpMux.HandleFunc("/plugin/check_active", HandlePluginCheckActive)
+	router := router.GetRouter()
+	router.HandleFunc("/plugin/register", HandlePluginRegister)
+	router.HandleFunc("/plugin/check_active", HandlePluginCheckActive)
 }
 
 func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {

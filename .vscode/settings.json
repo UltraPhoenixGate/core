@@ -4,6 +4,7 @@
     "gorm",
     "logrus",
     "Mqtt",
+    "Subrouter",
     "ultraphx",
     "upgrader",
     "vmagent"

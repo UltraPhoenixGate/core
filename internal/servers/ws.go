@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/services/auth"
 
@@ -98,13 +99,13 @@ func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 	go writePump(client, conn)
 }
 
-func ServeWs(h *hub.Hub) {
-	httpMap := http.NewServeMux()
-	httpMap.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+func SetupWs(h *hub.Hub) {
+	authRouter := router.GetAuthRouter()
+	authRouter.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		wsHandler(w, r, h) // Pass the hub to the wsHandler function
 	})
 	// 反向ws
-	httpMap.HandleFunc("/ws-reverse", func(w http.ResponseWriter, r *http.Request) {
+	authRouter.HandleFunc("/ws-reverse", func(w http.ResponseWriter, r *http.Request) {
 		wsUrl := r.URL.Query().Get("url")
 		if wsUrl == "" {
 			http.Error(w, "url is required", http.StatusBadRequest)
@@ -117,8 +118,6 @@ func ServeWs(h *hub.Hub) {
 		}
 		ConnectWs(u, h)
 	})
-	logrus.Info("Starting websocket server on :8080")
-	http.ListenAndServe(":8080", httpMap)
 }
 
 func ConnectWs(u *url.URL, h *hub.Hub) {

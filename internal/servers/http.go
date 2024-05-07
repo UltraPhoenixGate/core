@@ -3,7 +3,7 @@ package servers
 import (
 	"io"
 	"net/http"
-	"ultraphx-core/internal/api"
+	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/hub"
 
 	"github.com/sirupsen/logrus"
@@ -34,12 +34,14 @@ func httpBroadcastHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 	w.Write([]byte("ok"))
 }
 
-func ServeHttp(h *hub.Hub) {
-	httpMap := api.GetHttpMux()
-	httpMap.HandleFunc("/broadcast", func(w http.ResponseWriter, r *http.Request) {
+func SetupHttp(h *hub.Hub) {
+	authRouter := router.GetAuthRouter()
+	authRouter.HandleFunc("/broadcast", func(w http.ResponseWriter, r *http.Request) {
 		httpBroadcastHandler(w, r, h) // Pass the hub to the httpBroadcastHandler function
 	})
+}
 
-	logrus.Info("Starting HTTP server on :8081")
-	http.ListenAndServe(":8081", httpMap)
+func ServeHTTP(h *hub.Hub) {
+	logrus.Info("Starting HTTP server on :8080")
+	http.ListenAndServe(":8080", router.GetRouter())
 }
