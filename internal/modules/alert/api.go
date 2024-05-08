@@ -50,27 +50,32 @@ func GetRule(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAlertRecords(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		StartAt  time.Time `json:"start_at"`
-		EndAt    time.Time `json:"end_at"`
-		ClientID string    `json:"client_id"`
+	startAt := time.Time{}
+	endAt := time.Time{}
+	if startAtStr := r.URL.Query().Get("start_at"); startAtStr != "" {
+		if err := startAt.UnmarshalText([]byte(startAtStr)); err != nil {
+			resp.Error(w, "Invalid start_at")
+			return
+		}
 	}
-
-	if err := validator.ShouldBind(r, &req); err != nil {
-		resp.Error(w, "Invalid request")
-		return
+	if endAtStr := r.URL.Query().Get("end_at"); endAtStr != "" {
+		if err := endAt.UnmarshalText([]byte(endAtStr)); err != nil {
+			resp.Error(w, "Invalid end_at")
+			return
+		}
 	}
+	clientID := r.URL.Query().Get("client_id")
 
 	var records []*AlertRecord
 	query := (&AlertRecord{}).Query()
-	if !req.StartAt.IsZero() {
-		query = query.Where("created_at >= ?", req.StartAt)
+	if !startAt.IsZero() {
+		query = query.Where("created_at >= ?", startAt)
 	}
-	if !req.EndAt.IsZero() {
-		query = query.Where("created_at <= ?", req.EndAt)
+	if !startAt.IsZero() {
+		query = query.Where("created_at <= ?", endAt)
 	}
-	if req.ClientID != "" {
-		query = query.Where("client_id = ?", req.ClientID)
+	if clientID != "" {
+		query = query.Where("client_id = ?", clientID)
 	}
 	if err := query.Find(&records).Error; err != nil {
 		resp.Error(w, "Failed to get records")
