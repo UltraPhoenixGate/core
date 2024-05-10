@@ -20,5 +20,8 @@ func JSON(w http.ResponseWriter, code int, data interface{}) {
 }
 
 func OK(w http.ResponseWriter, data interface{}) {
-	JSON(w, http.StatusOK, data)
+	JSON(w, http.StatusOK, H{
+		"success": true,
+		"data":    data,
+	})
 }

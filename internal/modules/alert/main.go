@@ -82,7 +82,9 @@ func Setup() {
 	authRouter := router.GetAuthRouter()
 	authRouter.HandleFunc("/alert/rules", GetAlertRules).Methods("GET")
 	authRouter.HandleFunc("/alert/rule", AddAlertRule).Methods("POST")
-	authRouter.HandleFunc("/alert/rule", GetRule).Methods("GET")
+	authRouter.HandleFunc("/alert/rule", GetAlertRule).Methods("GET")
+	authRouter.HandleFunc("/alert/rule", UpdateAlertRule).Methods("PUT")
+	authRouter.HandleFunc("/alert/rule", DeleteAlertRule).Methods("DELETE")
 
 	authRouter.HandleFunc("/alert/records", GetAlertRecords).Methods("POST")
 	logrus.Info("Alert module ready")

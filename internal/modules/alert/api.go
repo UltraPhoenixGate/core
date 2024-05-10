@@ -30,7 +30,7 @@ func AddAlertRule(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func GetRule(w http.ResponseWriter, r *http.Request) {
+func GetAlertRule(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	if name == "" {
 		resp.Error(w, "Invalid request")
@@ -47,6 +47,38 @@ func GetRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp.Error(w, "Rule not found")
+}
+
+func UpdateAlertRule(w http.ResponseWriter, r *http.Request) {
+	var rule AlertRule
+	if err := validator.ShouldBind(r, &rule); err != nil {
+		resp.Error(w, "Invalid request")
+		return
+	}
+
+	if err := UpdateRule(&rule); err != nil {
+		resp.Error(w, err.Error())
+		return
+	}
+
+	resp.OK(w, resp.H{
+		"rule": rule,
+	})
+}
+
+func DeleteAlertRule(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		resp.Error(w, "Invalid request")
+		return
+	}
+
+	if err := DeleteRule(name); err != nil {
+		resp.Error(w, err.Error())
+		return
+	}
+
+	resp.OK(w, resp.H{})
 }
 
 func GetAlertRecords(w http.ResponseWriter, r *http.Request) {

@@ -85,3 +85,53 @@ func AddRule(rule *AlertRule) error {
 	rules = append(rules, rule)
 	return nil
 }
+
+func UpdateRule(rule *AlertRule) error {
+	// if rule does not exist, return error
+	found := false
+	for i, r := range rules {
+		if r.Name == rule.Name {
+			rules[i] = rule
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("rule %s not found", rule.Name)
+	}
+
+	filePath := filepath.Join(baseConfigPath, fmt.Sprintf("%s.json", rule.Name))
+	ruleFile, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer ruleFile.Close()
+
+	if err := json.NewEncoder(ruleFile).Encode(&rule); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteRule(name string) error {
+	// if rule does not exist, return error
+	found := false
+	for i, r := range rules {
+		if r.Name == name {
+			rules = append(rules[:i], rules[i+1:]...)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("rule %s not found", name)
+	}
+
+	filePath := filepath.Join(baseConfigPath, fmt.Sprintf("%s.json", name))
+	if err := os.Remove(filePath); err != nil {
+		return err
+	}
+
+	return nil
+}

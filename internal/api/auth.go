@@ -76,16 +76,29 @@ func HandlePluginCheckActive(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	ok, err := auth.CheckJwtToken(jwtStr)
+	claims, err := auth.ParseJWEToken(jwtStr)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+
+	// now we not check the token expiration
+	// if claims.Expiry.Time().Before(time.Now()) {
+	// 	return false, errors.New("token expired")
+	// }
+
+	client := models.Client{
+		ID: claims.ClientID,
+	}
+
+	if err := client.Query().Find(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	resp.OK(w, resp.H{
-		"success": true,
+		"active": client.Status == models.ClientStatusActive,
+		"status": client.Status,
 	})
 }
