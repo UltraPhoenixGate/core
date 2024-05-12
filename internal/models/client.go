@@ -3,7 +3,9 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -80,6 +82,15 @@ func PrasePermission(s string) (Permission, error) {
 
 func (c *Client) Query() *gorm.DB {
 	return DB.Model(c)
+}
+
+func (c *Client) CheckIsExpired() {
+	// if one minute later, the client is still pending, then set it to expired
+	if c.Status == ClientStatusPending && time.Now().After(c.CreatedAt.Add(1*time.Minute)) {
+		logrus.WithField("client", c.ID).Info("Client is expired")
+		c.Status = ClientStatusExpired
+		c.Query().Save(c)
+	}
 }
 
 // DefaultPluginPermissions 插件默认权限

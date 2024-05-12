@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/services/auth"
 	"ultraphx-core/pkg/resp"
@@ -12,17 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	router := router.GetRouter()
-	router.HandleFunc("/plugin/register", HandlePluginRegister)
-	router.HandleFunc("/plugin/check_active", HandlePluginCheckActive)
-}
-
 func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Name        string   `json:"name" validate:"required"`
-		Description string   `json:"description"`
-		Permissions []string `json:"permissions"`
+		Name        string            `json:"name" validate:"required"`
+		Description string            `json:"description"`
+		Type        models.ClientType `json:"type" validate:"required"`
+		Permissions []string          `json:"permissions"`
 	}
 	if err := validator.ShouldBind(r, &req); err != nil {
 		resp.Error(w, "Invalid request")
@@ -43,7 +37,7 @@ func HandlePluginRegister(w http.ResponseWriter, r *http.Request) {
 		ID:          uuid.New().String(),
 		Name:        req.Name,
 		Description: req.Description,
-		Type:        models.ClientTypePlugin,
+		Type:        req.Type,
 		Permissions: clientPermissions,
 		Status:      models.ClientStatusPending,
 	}
@@ -81,7 +75,6 @@ func HandlePluginCheckActive(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
 	// now we not check the token expiration
 	// if claims.Expiry.Time().Before(time.Now()) {
 	// 	return false, errors.New("token expired")
@@ -96,6 +89,8 @@ func HandlePluginCheckActive(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+
+	client.CheckIsExpired()
 
 	resp.OK(w, resp.H{
 		"active": client.Status == models.ClientStatusActive,

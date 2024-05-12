@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 	"ultraphx-core/internal/models"
 
@@ -78,6 +79,7 @@ func RefreshJWEToken(rawToken string) (string, error) {
 }
 
 func ParseJWEToken(rawToken string) (*JwtClaims, error) {
+	rawToken = strings.TrimPrefix(rawToken, "Bearer ")
 	token, err := jose.ParseEncrypted(rawToken, []jose.KeyAlgorithm{jose.RSA_OAEP}, []jose.ContentEncryption{jose.A128GCM})
 	if err != nil {
 		logrus.WithError(err).Error("Failed to parse token")

@@ -26,6 +26,7 @@ func CheckJwtToken(token string) (bool, error) {
 		logrus.WithError(err).Error("Failed to find client")
 		return false, err
 	}
+	client.CheckIsExpired()
 
 	if client.Status != models.ClientStatusActive {
 		if client.Status == models.ClientStatusPending {

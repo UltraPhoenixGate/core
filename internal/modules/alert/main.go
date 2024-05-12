@@ -1,9 +1,9 @@
 package alert
 
 import (
-	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/models"
+	"ultraphx-core/internal/router"
 	"ultraphx-core/pkg/global"
 
 	"github.com/sirupsen/logrus"
@@ -86,6 +86,6 @@ func Setup() {
 	authRouter.HandleFunc("/alert/rule", UpdateAlertRule).Methods("PUT")
 	authRouter.HandleFunc("/alert/rule", DeleteAlertRule).Methods("DELETE")
 
-	authRouter.HandleFunc("/alert/records", GetAlertRecords).Methods("POST")
+	authRouter.HandleFunc("/alert/records", GetAlertRecords).Methods("GET")
 	logrus.Info("Alert module ready")
 }

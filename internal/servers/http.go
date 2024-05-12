@@ -3,9 +3,9 @@ package servers
 import (
 	"io"
 	"net/http"
-	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/config"
 	"ultraphx-core/internal/hub"
+	"ultraphx-core/internal/router"
 
 	"github.com/sirupsen/logrus"
 )

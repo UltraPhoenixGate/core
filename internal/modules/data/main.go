@@ -61,6 +61,7 @@ func writeToVM(data string) {
 }
 
 func handleDataListener(h *hub.Hub, msg *hub.Message) {
+	logrus.Info("Data message received", msg)
 	// handle data message
 	payload := msg.Payload.(global.SensorPayload)
 	if payload.Type != global.SensorPayloadTypeData {

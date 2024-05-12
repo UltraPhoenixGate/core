@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	"ultraphx-core/internal/api/router"
 	"ultraphx-core/internal/hub"
+	"ultraphx-core/internal/router"
 	"ultraphx-core/internal/services/auth"
 
 	"github.com/google/uuid"
