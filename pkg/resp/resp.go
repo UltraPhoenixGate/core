@@ -1,26 +1,23 @@
 package resp
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type H = map[string]interface{}
 
-func Error(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusBadRequest)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(H{"error": message})
+func Error(c *gin.Context, message string) {
+	c.AbortWithStatusJSON(http.StatusBadRequest, H{"error": message})
 }
 
-func JSON(w http.ResponseWriter, code int, data interface{}) {
-	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+func JSON(c *gin.Context, code int, data interface{}) {
+	c.JSON(code, data)
 }
 
-func OK(w http.ResponseWriter, data interface{}) {
-	JSON(w, http.StatusOK, H{
+func OK(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, H{
 		"success": true,
 		"data":    data,
 	})

@@ -1,30 +1,38 @@
 package router
 
 import (
-	"net/http"
 	"ultraphx-core/internal/api"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-var apiRouter *mux.Router
-var authRouter *mux.Router
+var r *gin.Engine
+var apiRouter *gin.RouterGroup
+var authRouter *gin.RouterGroup
 
 func init() {
-	r := mux.NewRouter()
-	apiRouter = r.PathPrefix("/api").Subrouter()
-	authRouter = apiRouter.PathPrefix("/auth").Subrouter()
+	r = gin.Default()
+
+	// Register middleware
+	r.Use(CorsMiddleware)
+
+	apiRouter = r.Group("/api")
+	authRouter = apiRouter.Group("/auth")
 	authRouter.Use(AuthMiddleware)
 
 	// Register routes
-	apiRouter.HandleFunc("/plugin/register", api.HandlePluginRegister).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/plugin/check_active", api.HandlePluginCheckActive).Methods(http.MethodGet)
+	apiRouter.POST("/plugin/register", api.HandlePluginRegister)
+	apiRouter.GET("/plugin/check_active", api.HandlePluginCheckActive)
 }
 
-func GetRouter() *mux.Router {
+func GetApiRouter() *gin.RouterGroup {
 	return apiRouter
 }
 
-func GetAuthRouter() *mux.Router {
+func GetAuthRouter() *gin.RouterGroup {
 	return authRouter
+}
+
+func Run(addr string) {
+	r.Run(addr)
 }

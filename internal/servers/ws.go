@@ -8,6 +8,7 @@ import (
 	"ultraphx-core/internal/router"
 	"ultraphx-core/internal/services/auth"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -100,20 +101,20 @@ func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 }
 
 func SetupWs(h *hub.Hub) {
-	authRouter := router.GetAuthRouter()
-	authRouter.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		wsHandler(w, r, h) // Pass the hub to the wsHandler function
+	apiRouter := router.GetApiRouter()
+	apiRouter.GET("/ws", func(c *gin.Context) {
+		wsHandler(c.Writer, c.Request, h) // Pass the hub to the wsHandler function
 	})
 	// 反向ws
-	authRouter.HandleFunc("/ws-reverse", func(w http.ResponseWriter, r *http.Request) {
-		wsUrl := r.URL.Query().Get("url")
+	apiRouter.GET("/ws-reverse", func(c *gin.Context) {
+		wsUrl := c.Query("url")
 		if wsUrl == "" {
-			http.Error(w, "url is required", http.StatusBadRequest)
+			c.String(http.StatusBadRequest, "url is required")
 			return
 		}
 		u, err := url.Parse(wsUrl)
 		if err != nil {
-			http.Error(w, "url is invalid", http.StatusBadRequest)
+			c.String(http.StatusBadRequest, "url is invalid")
 			return
 		}
 		ConnectWs(u, h)

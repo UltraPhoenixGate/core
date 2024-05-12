@@ -7,6 +7,7 @@ import (
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/router"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,13 +38,13 @@ func httpBroadcastHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
 
 func SetupHttp(h *hub.Hub) {
 	authRouter := router.GetAuthRouter()
-	authRouter.HandleFunc("/broadcast", func(w http.ResponseWriter, r *http.Request) {
-		httpBroadcastHandler(w, r, h) // Pass the hub to the httpBroadcastHandler function
+	authRouter.POST("/broadcast", func(c *gin.Context) {
+		httpBroadcastHandler(c.Writer, c.Request, h) // Pass the hub to the httpBroadcastHandler function
 	})
 }
 
 func ServeHTTP(h *hub.Hub) {
 	httpCfg := config.GetServerConfig()
 	logrus.Info("Starting HTTP server on :" + httpCfg.HttpPort)
-	http.ListenAndServe(":"+httpCfg.HttpPort, router.GetRouter())
+	router.Run(":" + httpCfg.HttpPort)
 }

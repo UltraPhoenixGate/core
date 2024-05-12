@@ -80,12 +80,12 @@ func Setup() {
 	models.AutoMigrate(&AlertRecord{})
 
 	authRouter := router.GetAuthRouter()
-	authRouter.HandleFunc("/alert/rules", GetAlertRules).Methods("GET")
-	authRouter.HandleFunc("/alert/rule", AddAlertRule).Methods("POST")
-	authRouter.HandleFunc("/alert/rule", GetAlertRule).Methods("GET")
-	authRouter.HandleFunc("/alert/rule", UpdateAlertRule).Methods("PUT")
-	authRouter.HandleFunc("/alert/rule", DeleteAlertRule).Methods("DELETE")
+	authRouter.GET("/alert/rules", GetAlertRules)
+	authRouter.POST("/alert/rule", AddAlertRule)
+	authRouter.GET("/alert/rule", GetAlertRule)
+	authRouter.PUT("/alert/rule", UpdateAlertRule)
+	authRouter.DELETE("/alert/rule", DeleteAlertRule)
 
-	authRouter.HandleFunc("/alert/records", GetAlertRecords).Methods("GET")
+	authRouter.GET("/alert/records", GetAlertRecords)
 	logrus.Info("Alert module ready")
 }
