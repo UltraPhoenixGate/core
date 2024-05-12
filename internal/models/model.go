@@ -1,6 +1,8 @@
 package models
 
 import (
+	"ultraphx-core/internal/config"
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
@@ -13,7 +15,8 @@ func init() {
 
 // Setup initializes the database instance
 func Setup() {
-	db, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{})
+	dbConf := config.GetDataBaseConfig()
+	db, err := gorm.Open(sqlite.Open(dbConf.File), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

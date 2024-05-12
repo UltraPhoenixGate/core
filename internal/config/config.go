@@ -8,8 +8,13 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig
-	VmDB   VmDBConfig
+	Server   ServerConfig
+	VmDB     VmDBConfig
+	DataBase DataBaseConfig
+}
+
+type DataBaseConfig struct {
+	File string
 }
 
 type VmDBConfig struct {
@@ -29,6 +34,7 @@ func init() {
 
 	viper.SetDefault("server.httpPort", "8080")
 	viper.SetDefault("vm_db.url", "http://localhost:8428")
+	viper.SetDefault("database.file", "./config/database.db")
 
 	if err := os.MkdirAll("./config", 0755); err != nil {
 		panic(err)
@@ -60,4 +66,8 @@ func GetVmDBConfig() *VmDBConfig {
 
 func GetServerConfig() *ServerConfig {
 	return &Cfg.Server
+}
+
+func GetDataBaseConfig() *DataBaseConfig {
+	return &Cfg.DataBase
 }
