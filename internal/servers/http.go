@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"ultraphx-core/internal/api/router"
+	"ultraphx-core/internal/config"
 	"ultraphx-core/internal/hub"
 
 	"github.com/sirupsen/logrus"
@@ -42,6 +43,7 @@ func SetupHttp(h *hub.Hub) {
 }
 
 func ServeHTTP(h *hub.Hub) {
-	logrus.Info("Starting HTTP server on :8080")
-	http.ListenAndServe(":8080", router.GetRouter())
+	httpCfg := config.GetServerConfig()
+	logrus.Info("Starting HTTP server on :" + httpCfg.HttpPort)
+	http.ListenAndServe(":"+httpCfg.HttpPort, router.GetRouter())
 }

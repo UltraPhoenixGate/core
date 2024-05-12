@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"ultraphx-core/internal/config"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/models"
 	"ultraphx-core/pkg/global"
@@ -38,7 +39,7 @@ func ConvertToTimeSeries(rawData global.SensorData, meta map[string]string) (str
 }
 
 func writeToVM(data string) {
-	vmURL := "http://localhost:8428/api/v1/write"
+	vmURL := config.GetVmDBConfig().Url + "api/v1/write"
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
