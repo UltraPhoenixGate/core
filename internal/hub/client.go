@@ -1,8 +1,6 @@
 package hub
 
 import (
-	"slices"
-
 	"github.com/google/uuid"
 )
 
@@ -14,11 +12,10 @@ const (
 )
 
 type Client struct {
-	ID          string
-	SendChan    chan *Message
-	Topics      map[string]bool
-	Hub         *Hub
-	Permissions map[string][]PermissionType
+	ID       string
+	SendChan chan *Message
+	Topics   map[string]bool
+	Hub      *Hub
 }
 
 func NewClient(id string, hub *Hub) *Client {
@@ -26,11 +23,10 @@ func NewClient(id string, hub *Hub) *Client {
 		id = uuid.New().String()
 	}
 	return &Client{
-		ID:          id,
-		SendChan:    make(chan *Message),
-		Topics:      make(map[string]bool),
-		Hub:         hub,
-		Permissions: map[string][]PermissionType{},
+		ID:       id,
+		SendChan: make(chan *Message),
+		Topics:   make(map[string]bool),
+		Hub:      hub,
 	}
 }
 
@@ -41,24 +37,10 @@ func (c *Client) Send(msg *Message) {
 
 // 广播消息
 func (c *Client) Broadcast(msg *Message) {
-	permission, ok := c.Permissions[GetTopicPermission(msg.Topic)]
-	if !ok {
-		return
-	}
-	if !slices.Contains(permission, PermissionTypeWrite) {
-		return
-	}
 	c.Hub.Broadcast(msg)
 }
 
 func (c *Client) Subscribe(topic string) {
-	permission, ok := c.Permissions[GetTopicPermission(topic)]
-	if !ok {
-		return
-	}
-	if !slices.Contains(permission, PermissionTypeRead) {
-		return
-	}
 	c.Topics[topic] = true
 }
 
