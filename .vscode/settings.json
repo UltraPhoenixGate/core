@@ -1,8 +1,10 @@
 {
   "cSpell.words": [
     "Encrypter",
+    "gjson",
     "gorm",
     "logrus",
+    "mapstructure",
     "Mqtt",
     "Subrouter",
     "ultraphx",

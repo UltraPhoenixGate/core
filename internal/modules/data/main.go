@@ -19,68 +19,65 @@ func ConvertToTimeSeries(rawData global.SensorData, meta map[string]string) (str
 		return "", fmt.Errorf("rawData cannot be empty")
 	}
 
-	timestamp := time.Now().Unix()
+	var result strings.Builder
 
-	var timeSeriesData []string
-	for metricName, metricValue := range rawData {
-		var labels []string
-		for key, value := range meta {
-			label := fmt.Sprintf("%s=\"%s\"", key, strings.ReplaceAll(value, "\"", "\\\""))
-			labels = append(labels, label)
-		}
-		labelsStr := "{" + strings.Join(labels, ",") + "}"
-
-		metricData := fmt.Sprintf("%s%s %f %d", metricName, labelsStr, metricValue, timestamp)
-		timeSeriesData = append(timeSeriesData, metricData)
+	// Convert meta map to a formatted string of labels for Prometheus
+	var labels []string
+	for key, value := range meta {
+		labels = append(labels, fmt.Sprintf("%s=\"%s\"", key, value))
 	}
-	result := strings.Join(timeSeriesData, "\n")
+	labelsString := "{" + strings.Join(labels, ",") + "}"
 
-	return result, nil
+	// Format each sensor data point as a Prometheus time series
+	for metric, value := range rawData {
+		result.WriteString(fmt.Sprintf("%s%s %f\n", metric, labelsString, value))
+	}
+
+	return result.String(), nil
 }
 
 func writeToVM(data string) {
-	vmURL := config.GetVmDBConfig().Url + "api/v1/write"
+	vmURL := config.GetVmDBConfig().Url + "/api/v1/import/prometheus"
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
+	logrus.Info("Writing to VM", data)
 	req, err := http.NewRequest("POST", vmURL, bytes.NewBufferString(data))
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create request")
 	}
 
-	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
+	req.Header.Set("Content-Type", "text/plain")
 	resp, err := client.Do(req)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to send request")
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		logrus.WithField("status_code", resp.StatusCode).Error("Failed to write to vm")
+	if resp.StatusCode == http.StatusNoContent {
+		logrus.Info("Data written to VM")
+	} else {
+		logrus.WithField("status_code", resp.StatusCode).Error("Failed to write to VM")
 	}
 }
 
 func handleDataListener(h *hub.Hub, msg *hub.Message) {
 	logrus.Info("Data message received", msg)
 	// handle data message
-	payload := msg.Payload.(global.SensorPayload)
-	if payload.Type != global.SensorPayloadTypeData {
-		return
-	}
+	payload := global.ParseSensorDataPayload(msg.Payload)
 
 	client := models.Client{
-		ID: payload.SensorID,
+		ID: payload.SenderID,
 	}
 	if err := client.Query().Find(&client).Error; err != nil {
 		logrus.WithError(err).Error("Failed to find client")
 		return
 	}
 	meta := map[string]string{
-		"sensor_id": payload.SensorID,
+		"sensor_id": payload.SenderID,
 		"name":      client.Name,
 	}
 
-	timeSeriesData, err := ConvertToTimeSeries(payload.Data.(global.SensorData), meta)
+	timeSeriesData, err := ConvertToTimeSeries(payload.Data, meta)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to convert to time series")
 		return

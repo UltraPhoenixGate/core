@@ -1,6 +1,10 @@
 package hub
 
-import "github.com/google/uuid"
+import (
+	"strings"
+
+	"github.com/google/uuid"
+)
 
 type ListenerCallback func(h *Hub, msg *Message)
 
@@ -42,14 +46,29 @@ func RemoveListener(id string) {
 }
 
 func handleBroadcastListener(h *Hub, msg *Message) {
-	listeners := registeredListeners[msg.Topic]
-	for _, listener := range listeners {
-		listener.Callback(h, msg)
+	for _, listeners := range registeredListeners {
+		for _, listener := range listeners {
+			if matchesTopic(listener.Topic, msg.Topic) {
+				listener.Callback(h, msg)
+			}
+		}
 	}
+}
 
-	// broadcast to # listeners
-	listeners = registeredListeners["#"]
-	for _, listener := range listeners {
-		listener.Callback(h, msg)
+func matchesTopic(listenerTopic, messageTopic string) bool {
+	if listenerTopic == "#" {
+		return true
 	}
+	listenerParts := strings.Split(listenerTopic, "::")
+	messageParts := strings.Split(messageTopic, "::")
+
+	for i, part := range listenerParts {
+		if part == "#" {
+			return true
+		}
+		if i >= len(messageParts) || part != messageParts[i] {
+			return false
+		}
+	}
+	return len(listenerParts) == len(messageParts)
 }

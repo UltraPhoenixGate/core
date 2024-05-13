@@ -4,7 +4,7 @@ import "encoding/json"
 
 type Message struct {
 	Topic   string
-	Payload interface{}
+	Payload map[string]interface{}
 }
 
 func (m *Message) ToJson() []byte {

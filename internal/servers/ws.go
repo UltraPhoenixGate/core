@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"time"
 	"ultraphx-core/internal/hub"
+	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,9 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func readPump(client *hub.Client, conn *websocket.Conn) {
+func readPump(hubClient *hub.Client, conn *websocket.Conn, client *models.Client) {
 	defer func() {
-		client.Hub.Unregister(client)
+		hubClient.Hub.Unregister(hubClient)
 		conn.Close()
 	}()
 
@@ -33,12 +34,12 @@ func readPump(client *hub.Client, conn *websocket.Conn) {
 		}
 		msg, err := hub.PraseMessageByte(payload)
 		if err != nil {
-			client.Send(&hub.Message{
-				Topic:   "error",
-				Payload: "Failed to parse message",
-			})
+			logrus.WithError(err).Error("Failed to parse message")
 		}
-		client.Broadcast(msg)
+		// handel message
+		msg.Payload["senderID"] = client.ID
+
+		hubClient.Broadcast(msg)
 	}
 }
 
@@ -71,7 +72,7 @@ func writePump(client *hub.Client, conn *websocket.Conn) {
 }
 
 func wsHandler(c *gin.Context, h *hub.Hub) {
-	// client := c.MustGet("client").(models.Client)
+	client := c.MustGet("client").(*models.Client)
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to upgrade connection to websocket")
@@ -81,7 +82,7 @@ func wsHandler(c *gin.Context, h *hub.Hub) {
 	hubClient := hub.NewClient(uuid.New().String(), h)
 	h.Register(hubClient)
 	logrus.WithField("client_id", hubClient.ID).Info("Client connected")
-	go readPump(hubClient, conn)
+	go readPump(hubClient, conn, client)
 	go writePump(hubClient, conn)
 }
 
@@ -92,6 +93,7 @@ func SetupWs(h *hub.Hub) {
 	})
 	// 反向ws
 	authRouter.GET("/ws-reverse", func(c *gin.Context) {
+		client := c.MustGet("client").(*models.Client)
 		wsUrl := c.Query("url")
 		if wsUrl == "" {
 			c.String(http.StatusBadRequest, "url is required")
@@ -102,18 +104,18 @@ func SetupWs(h *hub.Hub) {
 			c.String(http.StatusBadRequest, "url is invalid")
 			return
 		}
-		ConnectWs(u, h)
+		ConnectWs(u, h, client)
 	})
 }
 
-func ConnectWs(u *url.URL, h *hub.Hub) {
+func ConnectWs(u *url.URL, h *hub.Hub, client *models.Client) {
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to connect to websocket")
 		return
 	}
-	client := hub.NewClient(uuid.New().String(), h)
-	h.Register(client)
-	go readPump(client, conn)
-	go writePump(client, conn)
+	hubClient := hub.NewClient(uuid.New().String(), h)
+	h.Register(hubClient)
+	go readPump(hubClient, conn, client)
+	go writePump(hubClient, conn)
 }

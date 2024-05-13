@@ -2,6 +2,7 @@ package hub
 
 import (
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 type PermissionType int
@@ -37,6 +38,7 @@ func (c *Client) Send(msg *Message) {
 
 // 广播消息
 func (c *Client) Broadcast(msg *Message) {
+	logrus.WithField("client_id", c.ID).WithField("topic", msg.Topic).Debug("Broadcast message")
 	c.Hub.Broadcast(msg)
 }
 

@@ -33,7 +33,7 @@ func init() {
 	viper.SetConfigType("yaml")
 
 	viper.SetDefault("server.httpPort", "8080")
-	viper.SetDefault("vm_db.url", "http://localhost:8428")
+	viper.SetDefault("vmDB.url", "http://localhost:8428")
 	viper.SetDefault("database.file", "./config/database.db")
 
 	if err := os.MkdirAll("./config", 0755); err != nil {
