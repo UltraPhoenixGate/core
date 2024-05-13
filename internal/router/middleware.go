@@ -2,26 +2,49 @@ package router
 
 import (
 	"net/http"
+	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/services/auth"
+	"ultraphx-core/pkg/resp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func AuthMiddleware(c *gin.Context) {
 	jwtStr := c.GetHeader("Authorization")
 	if jwtStr == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	ok, err := auth.CheckJwtToken(jwtStr)
+	claims, err := auth.ParseJWEToken(jwtStr)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+
+	// now we not check the token expiration
+	// if claims.Expiry.Time().Before(time.Now()) {
+	// 	return false, errors.New("token expired")
+	// }
+
+	client := models.Client{
+		ID: claims.ClientID,
+	}
+
+	if err := client.Query().Find(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
+	client.CheckIsExpired()
+
+	if client.Status != models.ClientStatusActive {
+		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	c.Set("client", &client)
+	c.Set("claims", claims)
 	c.Next()
 }
 

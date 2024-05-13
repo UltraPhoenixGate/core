@@ -6,7 +6,6 @@ import (
 	"time"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/router"
-	"ultraphx-core/internal/services/auth"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -71,42 +70,28 @@ func writePump(client *hub.Client, conn *websocket.Conn) {
 	}
 }
 
-func wsHandler(w http.ResponseWriter, r *http.Request, h *hub.Hub) {
-	// authentication
-	jwtStr := r.Header.Get("Authorization")
-	if jwtStr == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	ok, err := auth.CheckJwtToken(jwtStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
+func wsHandler(c *gin.Context, h *hub.Hub) {
+	// client := c.MustGet("client").(models.Client)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to upgrade connection to websocket")
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	client := hub.NewClient(uuid.New().String(), h)
-	h.Register(client)
-	logrus.WithField("client_id", client.ID).Info("Client connected")
-	go readPump(client, conn)
-	go writePump(client, conn)
+	hubClient := hub.NewClient(uuid.New().String(), h)
+	h.Register(hubClient)
+	logrus.WithField("client_id", hubClient.ID).Info("Client connected")
+	go readPump(hubClient, conn)
+	go writePump(hubClient, conn)
 }
 
 func SetupWs(h *hub.Hub) {
-	apiRouter := router.GetApiRouter()
-	apiRouter.GET("/ws", func(c *gin.Context) {
-		wsHandler(c.Writer, c.Request, h) // Pass the hub to the wsHandler function
+	authRouter := router.GetAuthRouter()
+	authRouter.GET("/ws", func(c *gin.Context) {
+		wsHandler(c, h) // Pass the hub to the wsHandler function
 	})
 	// 反向ws
-	apiRouter.GET("/ws-reverse", func(c *gin.Context) {
+	authRouter.GET("/ws-reverse", func(c *gin.Context) {
 		wsUrl := c.Query("url")
 		if wsUrl == "" {
 			c.String(http.StatusBadRequest, "url is required")
