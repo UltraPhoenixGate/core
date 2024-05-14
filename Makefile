@@ -7,3 +7,6 @@ dev:
 
 build:
 	@go build -o bin/ultraphx-core -ldflags "-s -w" cmd/core/main.go
+
+docker-build:
+	@docker build -t ultraphx-core .
