@@ -23,6 +23,9 @@ func init() {
 	// Register routes
 	apiRouter.POST("/plugin/register", api.HandlePluginRegister)
 	apiRouter.GET("/plugin/check_active", api.HandlePluginCheckActive)
+
+	authRouter.GET("/client/connected", api.GetConnectedClients)
+	authRouter.GET("/client/pending", api.GetPendingClients)
 }
 
 func GetApiRouter() *gin.RouterGroup {
