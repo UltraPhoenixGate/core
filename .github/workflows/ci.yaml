@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         goos: [linux]
-        goarch: [amd64, arm64, loong64]
+        goarch: [amd64, loong64]
       fail-fast: true
     steps:
       - uses: actions/checkout@master
