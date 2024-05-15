@@ -36,6 +36,11 @@ func init() {
 	viper.SetDefault("vmDB.url", "http://localhost:8428")
 	viper.SetDefault("database.file", "./config/database.db")
 
+	// ENV
+	viper.BindEnv("server.httpPort", "HTTP_PORT")
+	viper.BindEnv("vmDB.url", "VM_DB_URL")
+	viper.BindEnv("database.file", "DATABASE_FILE")
+
 	if err := os.MkdirAll("./config", 0755); err != nil {
 		panic(err)
 	}
