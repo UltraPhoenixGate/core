@@ -113,7 +113,5 @@ func GetAlertRecords(c *gin.Context) {
 		resp.Error(c, "Failed to get records")
 		return
 	}
-	resp.OK(c, resp.H{
-		"records": records,
-	})
+	resp.OK(c, records)
 }
