@@ -9,8 +9,8 @@ import (
 // alert
 type AlertRecord struct {
 	gorm.Model
-	ClientID string    `json:"client_id"`
-	RuleName string    `json:"rule_name"`
+	ClientID string    `json:"clientId"`
+	RuleName string    `json:"ruleName"`
 	Level    AlertType `json:"level"`
 }
 
@@ -43,7 +43,7 @@ const (
 )
 
 type AlertRuleCondition struct {
-	SensorID string                 `json:"sensor_id" validate:"required"`
+	SensorID string                 `json:"sensorId" validate:"required"`
 	Metric   string                 `json:"metric" validate:"required"`
 	Type     AlertRuleConditionType `json:"type" validate:"required"`
 	Payload  any                    `json:"payload" validate:"required"`
