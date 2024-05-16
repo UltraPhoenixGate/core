@@ -13,6 +13,10 @@ import (
 func AuthMiddleware(c *gin.Context) {
 	jwtStr := c.GetHeader("Authorization")
 	if jwtStr == "" {
+		// try to get token from query
+		jwtStr = c.Query("token")
+	}
+	if jwtStr == "" {
 		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
