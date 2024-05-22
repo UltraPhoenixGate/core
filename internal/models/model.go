@@ -15,7 +15,7 @@ func init() {
 }
 
 type Model struct {
-	ID        uint      `gorm:"primarykey" json:"id"`
+	ID        string    `gorm:"primarykey" json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

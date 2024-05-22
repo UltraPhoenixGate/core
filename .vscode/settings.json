@@ -6,6 +6,8 @@
     "logrus",
     "mapstructure",
     "Mqtt",
+    "rtmp",
+    "RTSP",
     "Subrouter",
     "ultraphx",
     "upgrader",
