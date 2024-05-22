@@ -10,7 +10,7 @@ import (
 )
 
 type Client struct {
-	gorm.Model
+	Model
 	ID          string       `gorm:"primarykey" json:"id"`
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
@@ -36,7 +36,7 @@ const (
 )
 
 type Permission struct {
-	gorm.Model
+	Model
 	ClientID uint   `gorm:"index" json:"clientId"`
 	Topic    string `json:"topic"`
 	Type     PermissionType

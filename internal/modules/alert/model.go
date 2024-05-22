@@ -8,8 +8,8 @@ import (
 
 // alert
 type AlertRecord struct {
-	gorm.Model
-	ClientID string    `json:"clientId"`
+	models.Model
+	ClientID string    `json:"clientID"`
 	RuleName string    `json:"ruleName"`
 	Level    AlertType `json:"level"`
 }

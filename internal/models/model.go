@@ -1,6 +1,7 @@
 package models
 
 import (
+	"time"
 	"ultraphx-core/internal/config"
 
 	"github.com/glebarez/sqlite"
@@ -11,6 +12,12 @@ var DB *gorm.DB
 
 func init() {
 	Setup()
+}
+
+type Model struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // Setup initializes the database instance
