@@ -109,6 +109,9 @@ func GetAlertRecords(c *gin.Context) {
 	if clientID != "" {
 		query = query.Where("client_id = ?", clientID)
 	}
+	// Preload the client
+	query = query.Preload("Client")
+	query = query.Order("created_at DESC")
 	if err := query.Find(&records).Error; err != nil {
 		resp.Error(c, "Failed to get records")
 		return
