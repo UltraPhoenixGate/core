@@ -15,4 +15,5 @@ func Setup() {
 	authRouter.PUT("/camera", UpdateCamera)
 
 	authRouter.GET("/camera/capture", GetCurrentFrame)
+	authRouter.GET("/camera/stream", OpenStream)
 }
