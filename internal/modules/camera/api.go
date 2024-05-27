@@ -3,6 +3,7 @@ package camera
 import (
 	"io"
 	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -13,6 +14,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/use-go/onvif"
 	"github.com/use-go/onvif/device"
+	"github.com/use-go/onvif/media"
+	onvifDef "github.com/use-go/onvif/xsd/onvif"
 )
 
 // 新增摄像头
@@ -170,8 +173,10 @@ func OpenStream(c *gin.Context) {
 }
 
 type OnvifDevice struct {
-	Name  string `json:"name"`
-	Xaddr string `json:"xaddr"`
+	Name         string `json:"name"`
+	Xaddr        string `json:"xaddr"`
+	Manufacturer string `json:"manufacturer"`
+	Model        string `json:"model"`
 }
 
 func ScanOnvifDevices(c *gin.Context) {
@@ -210,14 +215,89 @@ func ScanOnvifDevices(c *gin.Context) {
 			logrus.Errorf("Failed to get hostname: %v", err)
 			continue
 		}
+		devInfoRes := device.GetDeviceInformationResponse{}
+		err = CallDeviceMethod(&dev, device.GetDeviceInformation{}, "GetDeviceInformationResponse", &devInfoRes)
+		if err != nil {
+			logrus.Errorf("Failed to get device information: %v", err)
+			continue
+		}
+
 		// logrus.WithField("hostname", getHostnameRes.HostnameInformation.Name).Info("Got hostname")
 		allOnvifDevices = append(allOnvifDevices, OnvifDevice{
-			Name:  string(getHostnameRes.HostnameInformation.Name),
-			Xaddr: GetDeviceXAddr(&dev),
+			Name:         string(getHostnameRes.HostnameInformation.Name),
+			Xaddr:        GetDeviceXAddr(&dev),
+			Manufacturer: devInfoRes.Manufacturer,
+			Model:        devInfoRes.Model,
 		})
 	}
 
 	resp.OK(c, resp.H{
 		"devices": allOnvifDevices,
+	})
+}
+
+func GetOnvifDeviceInfo(c *gin.Context) {
+	var req struct {
+		Xaddr    string `json:"xaddr" binding:"required" form:"xaddr"`
+		User     string `json:"user" form:"user"`
+		Password string `json:"password" form:"password"`
+	}
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	dev, err := onvif.NewDevice(onvif.DeviceParams{
+		Xaddr:    req.Xaddr,
+		Username: req.User,
+		Password: req.Password,
+	})
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+
+	devInfo := device.GetDeviceInformationResponse{}
+	err = CallDeviceMethod(dev, device.GetDeviceInformation{}, "GetDeviceInformationResponse", &devInfo)
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+
+	mediaProfiles := media.GetProfilesResponse{}
+	err = CallDeviceMethod(dev, media.GetProfiles{}, "GetProfilesResponse", &mediaProfiles)
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+	defaultProfile := mediaProfiles.Profiles[0]
+	streamUrlRes := media.GetStreamUriResponse{}
+	err = CallDeviceMethod(dev, media.GetStreamUri{
+		ProfileToken: defaultProfile.Token,
+		StreamSetup: onvifDef.StreamSetup{
+			Stream: "RTP-Unicast",
+			Transport: onvifDef.Transport{
+				Protocol: "RTSP",
+			},
+		},
+	}, "GetStreamUriResponse", &streamUrlRes)
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+
+	streamUrl, err := url.Parse(string(streamUrlRes.MediaUri.Uri))
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+
+	if req.User != "" && req.Password != "" {
+		streamUrl.User = url.UserPassword(req.User, req.Password)
+	}
+
+	resp.OK(c, resp.H{
+		"info":      devInfo,
+		"streamUrl": streamUrl.String(),
 	})
 }
