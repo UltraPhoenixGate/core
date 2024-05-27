@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 	"time"
 	"ultraphx-core/internal/config"
 	"ultraphx-core/internal/hub"
 	"ultraphx-core/internal/models"
+	"ultraphx-core/internal/router"
 	"ultraphx-core/pkg/global"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -89,5 +93,18 @@ func handleDataListener(h *hub.Hub, msg *hub.Message) {
 
 func Setup() {
 	hub.AddTopicListener("data::#", handleDataListener)
+	authRouter := router.GetAuthRouter()
+	vmUrl, err := url.Parse(config.GetVmDBConfig().Url)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to parse VM URL")
+		return
+	}
+	proxy := httputil.NewSingleHostReverseProxy(vmUrl)
+	// Proxy /vmdb/* to VMDB
+	authRouter.Any("/vmdb/*path", func(c *gin.Context) {
+		c.Request.URL.Path = c.Param("path")
+		proxy.ServeHTTP(c.Writer, c.Request)
+	})
+
 	logrus.Info("Data module ready")
 }
