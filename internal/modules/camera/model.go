@@ -8,12 +8,16 @@ import (
 
 type Camera struct {
 	models.Model
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description" binding:"required"`
-	StreamUrl   string         `json:"streamUrl" binding:"required"`
-	Protocol    StreamProtocol `json:"protocol"`
-	Enabled     bool           `json:"enabled"`
-	Extra       string         `json:"extra"`
+	Name         string         `json:"name" binding:"required"`
+	Description  string         `json:"description" binding:"required"`
+	StreamUrl    string         `json:"streamUrl" binding:"required"`
+	XAddr        string         `json:"xAddr"`
+	Protocol     StreamProtocol `json:"protocol"`
+	Enabled      bool           `json:"enabled"`
+	Manufacturer string         `json:"manufacturer"`
+	CameraModel  string         `json:"cameraModel"`
+	IsOnvif      bool           `json:"isOnvif"`
+	Extra        string         `json:"extra"`
 }
 
 func (c *Camera) Query() *gorm.DB {
