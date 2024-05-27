@@ -2,12 +2,17 @@ package camera
 
 import (
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"ultraphx-core/pkg/resp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/use-go/onvif"
+	"github.com/use-go/onvif/device"
 )
 
 // 新增摄像头
@@ -162,4 +167,57 @@ func OpenStream(c *gin.Context) {
 	if err != nil {
 		return
 	}
+}
+
+type OnvifDevice struct {
+	Name  string `json:"name"`
+	Xaddr string `json:"xaddr"`
+}
+
+func ScanOnvifDevices(c *gin.Context) {
+	// 获取全部接口
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		resp.Error(c, err.Error())
+		return
+	}
+
+	// 获取所有可用的onvif设备
+	allDevices := make([]onvif.Device, 0)
+	for _, i := range interfaces {
+		// 跳过 docker br
+		if strings.HasPrefix(i.Name, "br") {
+			continue
+		}
+		// 跳过 veth
+		if strings.HasPrefix(i.Name, "veth") {
+			continue
+		}
+		logrus.Infof("Scanning onvif devices at interface: %s", i.Name)
+		devices, err := onvif.GetAvailableDevicesAtSpecificEthernetInterface(i.Name)
+		if err != nil {
+			logrus.Errorf("Failed to get onvif devices at interface %s: %v", i.Name, err)
+			continue
+		}
+		allDevices = append(allDevices, devices...)
+	}
+	allOnvifDevices := make([]OnvifDevice, 0)
+
+	for _, dev := range allDevices {
+		getHostnameRes := device.GetHostnameResponse{}
+		err := CallDeviceMethod(&dev, device.GetHostname{}, "GetHostnameResponse", &getHostnameRes)
+		if err != nil {
+			logrus.Errorf("Failed to get hostname: %v", err)
+			continue
+		}
+		// logrus.WithField("hostname", getHostnameRes.HostnameInformation.Name).Info("Got hostname")
+		allOnvifDevices = append(allOnvifDevices, OnvifDevice{
+			Name:  string(getHostnameRes.HostnameInformation.Name),
+			Xaddr: GetDeviceXAddr(&dev),
+		})
+	}
+
+	resp.OK(c, resp.H{
+		"devices": allOnvifDevices,
+	})
 }

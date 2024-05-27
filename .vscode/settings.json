@@ -6,11 +6,13 @@
     "logrus",
     "mapstructure",
     "Mqtt",
+    "Onvif",
     "rtmp",
     "RTSP",
     "Subrouter",
     "ultraphx",
     "upgrader",
-    "vmagent"
+    "vmagent",
+    "Xaddr"
   ]
 }
