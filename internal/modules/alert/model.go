@@ -12,7 +12,7 @@ type AlertRecord struct {
 	ClientID string        `json:"clientID"`
 	RuleName string        `json:"ruleName"`
 	Level    AlertType     `json:"level"`
-	Client   models.Client `gorm:"foreignKey:ClientID;references:ID"`
+	Client   models.Client `json:"client" gorm:"foreignKey:ClientID;references:ID" `
 }
 
 func (a *AlertRecord) Query() *gorm.DB {
