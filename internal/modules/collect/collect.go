@@ -89,6 +89,12 @@ func runCollect(client *models.Client, h *hub.Hub) {
 	}
 
 	pushData(client, data, h)
+	collection.LastCollectionTime = time.Now()
+	if err := collection.Query().Save(collection).Error; err != nil {
+		logrus.WithError(err).Error("Failed to update collection last collection time")
+	}
+
+	logrus.Infof("Data collected from collection %s", collection.CollectionEndpoint)
 }
 
 type PullDataResult struct {
