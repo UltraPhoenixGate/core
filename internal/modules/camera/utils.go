@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -15,11 +16,22 @@ import (
 	"github.com/use-go/onvif"
 )
 
+func init() {
+	// 创建snapshots目录
+	if _, err := os.Stat("snapshots"); os.IsNotExist(err) {
+		os.Mkdir("snapshots", os.ModePerm)
+	}
+}
+
 func captureSnapshot(streamURL string) (string, error) {
 	md5 := md5.New()
-	outputFile := fmt.Sprintf("snapshots/%s.jpg", md5.Sum([]byte(streamURL)))
+	outputFile := fmt.Sprintf("snapshots/%s.jpg", hex.EncodeToString(md5.Sum([]byte(streamURL))))
+	// remove file if exists
+	if _, err := os.Stat(outputFile); err == nil {
+		os.Remove(outputFile)
+	}
 	cmd := exec.Command("ffmpeg", "-i", streamURL, "-vf", "select='eq(n\\,0)'", "-frames:v", "1", outputFile)
-
+	logrus.Infof("Running command: %v", cmd.String())
 	// 运行命令并获取输出
 	output, err := cmd.CombinedOutput()
 	if err != nil {
