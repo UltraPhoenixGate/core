@@ -133,6 +133,7 @@ func OpenStream(c *gin.Context) {
 
 	// ffmpeg params
 	params := []string{
+		"-rtsp_transport", "tcp",
 		"-i", camera.StreamUrl,
 		"-f", "mpegts",
 		"-codec:v", "mpeg1video",

@@ -30,7 +30,7 @@ func captureSnapshot(streamURL string) (string, error) {
 	if _, err := os.Stat(outputFile); err == nil {
 		os.Remove(outputFile)
 	}
-	cmd := exec.Command("ffmpeg", "-i", streamURL, "-vf", "select='eq(n\\,0)'", "-frames:v", "1", outputFile)
+	cmd := exec.Command("ffmpeg", "-rtsp_transport", "tcp", "-i", streamURL, "-vf", "select='eq(n\\,0)'", "-frames:v", "1", outputFile)
 	logrus.Infof("Running command: %v", cmd.String())
 	// 运行命令并获取输出
 	output, err := cmd.CombinedOutput()
