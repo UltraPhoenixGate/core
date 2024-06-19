@@ -11,13 +11,32 @@ import (
 
 type Client struct {
 	Model
-	ID          string       `gorm:"primarykey" json:"id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	Status      ClientStatus `json:"status"`
-	Type        ClientType   `json:"type"`
-	Permissions []Permission `gorm:"foreignKey:ClientID" json:"permissions"`
+	ID          string          `gorm:"primarykey" json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Status      ClientStatus    `json:"status"`
+	Type        ClientType      `json:"type"`
+	Permissions []Permission    `gorm:"foreignKey:ClientID" json:"permissions"`
+	Collection  *CollectionInfo `gorm:"foreignKey:ClientID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"collection"`
 }
+
+type CollectionInfo struct {
+	ClientID           string             `gorm:"primarykey" json:"clientId"`
+	DataType           CollectionDataType `json:"dataType"`           // 采集数据类型
+	CollectionPeriod   int                `json:"collectionPeriod"`   // 采集周期，单位为秒
+	LastCollectionTime time.Time          `json:"lastCollectionTime"` // 上次采集时间
+	IPAddress          string             `json:"ipAddress"`          // 客户端 IP 地址
+	CollectionEndpoint string             `json:"collectionEndpoint"` // 采集地址（URL）
+	AuthToken          string             `json:"authToken"`          // 鉴权信息，例如 token
+	CustomLabels       string             `json:"customLabels"`       // 自定义标签
+}
+
+type CollectionDataType string
+
+const (
+	CollectionDataTypeJSON    CollectionDataType = "json"
+	CollectionDataTypeMetrics CollectionDataType = "metrics"
+)
 
 type ClientStatus string
 
@@ -32,7 +51,10 @@ type ClientType string
 
 const (
 	ClientTypePlugin ClientType = "plugin"
+	// 传感器（被动）
 	ClientTypeSensor ClientType = "sensor"
+	// 传感器（主动）
+	ClientTypeSensorActive ClientType = "sensor_active"
 )
 
 type Permission struct {
@@ -81,6 +103,10 @@ func PrasePermission(s string) (Permission, error) {
 }
 
 func (c *Client) Query() *gorm.DB {
+	return DB.Model(c)
+}
+
+func (c *CollectionInfo) Query() *gorm.DB {
 	return DB.Model(c)
 }
 

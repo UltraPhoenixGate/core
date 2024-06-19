@@ -26,6 +26,7 @@ func init() {
 
 	authRouter.GET("/client/connected", api.GetConnectedClients)
 	authRouter.GET("/client/pending", api.GetPendingClients)
+	authRouter.POST("/client/add_active_sensor", api.AddActiveSensor)
 }
 
 func GetApiRouter() *gin.RouterGroup {

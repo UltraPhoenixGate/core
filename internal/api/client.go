@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func HandlePluginRegister(c *gin.Context) {
@@ -118,4 +119,61 @@ func GetPendingClients(c *gin.Context) {
 		return
 	}
 	resp.OK(c, clients)
+}
+
+// 新增主动传感器
+func AddActiveSensor(c *gin.Context) {
+	var req struct {
+		Name           string `json:"name" validate:"required"`
+		Description    string `json:"description"`
+		CollectionInfo struct {
+			DataType           models.CollectionDataType `json:"dataType" validate:"required"`
+			CollectionPeriod   int                       `json:"collectionPeriod" validate:"required"`
+			IPAddress          string                    `json:"ipAddress" validate:"required"`
+			CollectionEndpoint string                    `json:"collectionEndpoint" validate:"required"`
+			AuthToken          string                    `json:"authToken"`
+			CustomLabels       string                    `json:"customLabels"`
+		}
+	}
+
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	client := models.Client{
+		ID:          uuid.New().String(),
+		Name:        req.Name,
+		Description: req.Description,
+		Type:        models.ClientTypeSensorActive,
+		Status:      models.ClientStatusActive,
+	}
+
+	collectionInfo := models.CollectionInfo{
+		ClientID:           client.ID,
+		DataType:           req.CollectionInfo.DataType,
+		CollectionPeriod:   req.CollectionInfo.CollectionPeriod,
+		IPAddress:          req.CollectionInfo.IPAddress,
+		CollectionEndpoint: req.CollectionInfo.CollectionEndpoint,
+		AuthToken:          req.CollectionInfo.AuthToken,
+		CustomLabels:       req.CollectionInfo.CustomLabels,
+	}
+
+	err := models.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&client).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&collectionInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create client")
+		resp.Error(c, "Failed to create client")
+		return
+	}
+
+	resp.OK(c, client)
 }

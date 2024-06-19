@@ -11,7 +11,7 @@ func Bootstrap() {
 	go h.Run()
 
 	// Start all modules
-	modules.Setup()
+	modules.Setup(h)
 
 	// Start all servers
 	servers.SetupWs(h)

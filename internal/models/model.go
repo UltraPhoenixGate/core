@@ -45,5 +45,5 @@ func AutoMigrate(models ...interface{}) {
 // Migration migrate the schema
 func Migration(db *gorm.DB) {
 	// Migrate the schema
-	migrate(db, &Client{}, &Permission{}) // client
+	migrate(db, &Client{}, &Permission{}, &CollectionInfo{}) // client
 }
