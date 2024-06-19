@@ -6,7 +6,7 @@ RUN go mod download
 COPY . .
 RUN go build -o bin/ultraphx-core -ldflags "-s -w" cmd/core/main.go
 
-FROM alpine:3.12
+FROM alpine:3.20
 WORKDIR /app
 # Install ffmpeg
 RUN apk add --no-cache ffmpeg
