@@ -11,6 +11,7 @@ import (
 	"ultraphx-core/pkg/resp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/use-go/onvif"
 	"github.com/use-go/onvif/device"
@@ -25,6 +26,7 @@ func AddCamera(c *gin.Context) {
 		resp.Error(c, "Invalid request")
 		return
 	}
+	camera.ID = uuid.New().String()
 
 	if err := camera.Query().Create(&camera).Error; err != nil {
 		resp.Error(c, err.Error())
