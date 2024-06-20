@@ -150,6 +150,8 @@ func OpenStream(c *gin.Context) {
 
 	c.Header("Content-Type", "video/mp2t")
 	c.Header("Transfer-Encoding", "chunked")
+	c.Header("Access-Control-Allow-Origin", "*") // 添加CORS头
+	c.Header("Connection", "keep-alive")
 
 	cmd := exec.Command("ffmpeg", params...)
 	cmd.Stdout = c.Writer
