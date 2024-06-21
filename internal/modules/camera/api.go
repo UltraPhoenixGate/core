@@ -150,21 +150,24 @@ func OpenStream(c *gin.Context) {
 	// c.Header("Content-Type", "video/mp2t")
 
 	// ffmpeg params - h264
-	// ffmpeg params
 	params := []string{
 		"-rtsp_transport", "tcp",
 		"-i", camera.StreamUrl,
-		"-f", "flv", // 使用flv容器格式
+		"-f", "flv",
+		"-flags", "low_delay",
 		"-codec:v", "libx264", // 使用H.264编码
 		"-s", strconv.Itoa(req.Width) + "x" + strconv.Itoa(req.Height),
 		"-r", strconv.Itoa(req.Fps),
 		"-b:v", "800k",
 		"-bf", "0",
 		"-q:v", "1",
+		"-tune", "zerolatency", // 0延迟
+		"-g", strconv.Itoa(req.Fps * 2), // 关键帧间隔
 		"-muxdelay", "0.001",
+		"-preset", "ultrafast",
 		"-",
 	}
-	c.Header("Content-Type", "video/x-flv")
+	c.Header("Content-Type", "video/flv")
 
 	c.Header("Transfer-Encoding", "chunked")
 	c.Header("Access-Control-Allow-Origin", "*") // 添加CORS头
