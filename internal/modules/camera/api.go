@@ -133,12 +133,29 @@ func OpenStream(c *gin.Context) {
 		return
 	}
 
+	// ffmpeg params - mpeg1video
+	// params := []string{
+	// 	"-rtsp_transport", "tcp",
+	// 	"-i", camera.StreamUrl,
+	// 	"-f", "mpegts",
+	// 	"-codec:v", "mpeg1video",
+	// 	"-s", strconv.Itoa(req.Width) + "x" + strconv.Itoa(req.Height),
+	// 	"-r", strconv.Itoa(req.Fps),
+	// 	"-b:v", "800k",
+	// 	"-bf", "0",
+	// 	"-q:v", "1",
+	// 	"-muxdelay", "0.001",
+	// 	"-",
+	// }
+	// c.Header("Content-Type", "video/mp2t")
+
+	// ffmpeg params - h264
 	// ffmpeg params
 	params := []string{
 		"-rtsp_transport", "tcp",
 		"-i", camera.StreamUrl,
-		"-f", "mpegts",
-		"-codec:v", "mpeg1video",
+		"-f", "flv", // 使用flv容器格式
+		"-codec:v", "libx264", // 使用H.264编码
 		"-s", strconv.Itoa(req.Width) + "x" + strconv.Itoa(req.Height),
 		"-r", strconv.Itoa(req.Fps),
 		"-b:v", "800k",
@@ -147,8 +164,8 @@ func OpenStream(c *gin.Context) {
 		"-muxdelay", "0.001",
 		"-",
 	}
+	c.Header("Content-Type", "video/x-flv")
 
-	c.Header("Content-Type", "video/mp2t")
 	c.Header("Transfer-Encoding", "chunked")
 	c.Header("Access-Control-Allow-Origin", "*") // 添加CORS头
 	c.Header("Connection", "keep-alive")
