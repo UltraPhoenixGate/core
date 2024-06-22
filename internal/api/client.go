@@ -177,3 +177,69 @@ func AddActiveSensor(c *gin.Context) {
 
 	resp.OK(c, client)
 }
+
+func RemoveClient(c *gin.Context) {
+	var req struct {
+		ClientID string `json:"clientID" validate:"required"`
+	}
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	client := models.Client{
+		ID: req.ClientID,
+	}
+	if err := client.Query().Find(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		resp.Error(c, "Failed to find client")
+		return
+	}
+
+	err := models.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&client).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("client_id = ?", client.ID).Delete(&models.CollectionInfo{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		logrus.WithError(err).Error("Failed to remove client")
+		resp.Error(c, "Failed to remove client")
+		return
+	}
+
+	resp.OK(c, client)
+}
+
+func SetClientStatus(c *gin.Context) {
+	var req struct {
+		ClientID string `json:"clientID" validate:"required"`
+		Status   string `json:"status" validate:"required"`
+	}
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	client := models.Client{
+		ID: req.ClientID,
+	}
+	if err := client.Query().Find(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		resp.Error(c, "Failed to find client")
+		return
+	}
+
+	client.Status = models.ClientStatus(req.Status)
+	if err := client.Query().Save(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to update client")
+		resp.Error(c, "Failed to update client")
+		return
+	}
+
+	resp.OK(c, client)
+}
