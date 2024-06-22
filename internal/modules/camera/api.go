@@ -118,10 +118,12 @@ func OpenStream(c *gin.Context) {
 		Fps    int    `form:"fps"`
 		Width  int    `form:"width"`
 		Height int    `form:"height"`
+		Audio  bool   `form:"audio"`
 	}{
 		Fps:    25,
 		Width:  640,
 		Height: 480,
+		Audio:  true,
 	}
 	if err := c.ShouldBindQuery(&req); err != nil {
 		resp.Error(c, "Invalid request")
@@ -149,6 +151,12 @@ func OpenStream(c *gin.Context) {
 	// }
 	// c.Header("Content-Type", "video/mp2t")
 
+	audio := ""
+	if req.Audio {
+		audio = "-codec:a aac"
+	} else {
+		audio = "-an"
+	}
 	// ffmpeg params - h264
 	params := []string{
 		"-rtsp_transport", "tcp",
@@ -156,6 +164,8 @@ func OpenStream(c *gin.Context) {
 		"-f", "flv",
 		"-flags", "low_delay",
 		"-codec:v", "libx264", // 使用H.264编码
+		// 音频编码
+		audio,
 		"-s", strconv.Itoa(req.Width) + "x" + strconv.Itoa(req.Height),
 		"-r", strconv.Itoa(req.Fps),
 		"-b:v", "800k",
