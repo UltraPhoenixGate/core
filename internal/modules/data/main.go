@@ -103,6 +103,11 @@ func Setup() {
 	// Proxy /vmdb/* to VMDB
 	authRouter.Any("/vmdb/*path", func(c *gin.Context) {
 		c.Request.URL.Path = c.Param("path")
+		// 删除默认响应头
+		// for k := range c.Writer.Header() {
+		// 	c.Writer.Header().Del(k)
+		// }
+		c.Writer.Header().Del("Access-Control-Allow-Origin")
 		proxy.ServeHTTP(c.Writer, c.Request)
 	})
 
