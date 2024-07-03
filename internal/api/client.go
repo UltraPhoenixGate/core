@@ -101,7 +101,7 @@ func HandlePluginCheckActive(c *gin.Context) {
 
 func GetConnectedClients(c *gin.Context) {
 	var clients []models.Client
-	err := models.DB.Find(&clients).Where("status = ?", models.ClientStatusActive).Error
+	err := models.DB.Where("status = ?", models.ClientStatusActive).Find(&clients).Error
 	if err != nil {
 		logrus.WithError(err).Error("Failed to get clients")
 		resp.Error(c, "Failed to get clients")
@@ -112,7 +112,7 @@ func GetConnectedClients(c *gin.Context) {
 
 func GetPendingClients(c *gin.Context) {
 	var clients []models.Client
-	err := models.DB.Find(&clients).Where("status = ?", models.ClientStatusPending).Error
+	err := models.DB.Where("status = ?", models.ClientStatusPending).Find(&clients).Error
 	if err != nil {
 		logrus.WithError(err).Error("Failed to get clients")
 		resp.Error(c, "Failed to get clients")
