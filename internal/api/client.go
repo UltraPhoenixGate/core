@@ -243,3 +243,95 @@ func SetClientStatus(c *gin.Context) {
 
 	resp.OK(c, client)
 }
+
+// 初始化本地客户端
+func SetupLocalClient(c *gin.Context) {
+	req := struct {
+		SystemPassword string `json:"systemPassword" validate:"required"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	passWdBcrypt, err := auth.HashPassword(req.SystemPassword)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to hash password")
+		resp.Error(c, "Failed to hash password")
+		return
+	}
+
+	client := models.Client{
+		ID:          uuid.New().String(),
+		Name:        "核心客户端",
+		Description: "UltraPhoenix 核心客户端",
+		Type:        models.ClientTypeLocal,
+		Status:      models.ClientStatusActive,
+		Payload:     passWdBcrypt,
+	}
+
+	err = client.Query().Create(&client).Error
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create client")
+		resp.Error(c, "Failed to create client")
+		return
+	}
+	resp.OK(c, client)
+}
+
+// 本地客户端登录
+func LoginLocalClient(c *gin.Context) {
+	req := struct {
+		SystemPassword string `json:"systemPassword" validate:"required"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
+		resp.Error(c, "Invalid request")
+		return
+	}
+
+	client := models.Client{
+		Type: models.ClientTypeLocal,
+	}
+	if err := client.Query().Where("type = ?", models.ClientTypeLocal).First(&client).Error; err != nil {
+		logrus.WithError(err).Error("Failed to find client")
+		resp.Error(c, "Failed to find client")
+		return
+	}
+
+	if err := auth.ComparePassword(req.SystemPassword, client.Payload); err != nil {
+		resp.Error(c, "Invalid password")
+		return
+	}
+
+	token, err := auth.CreateJWEToken(auth.JwtPayload{
+		ClientID: client.ID,
+		Name:     client.Name,
+		Type:     client.Type,
+	})
+
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create token")
+		resp.Error(c, "Failed to create token")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
+}
+
+// 检查本地客户端是否存在
+func IsLocalClientExist(c *gin.Context) {
+	client := models.Client{
+		Type: models.ClientTypeLocal,
+	}
+	if err := client.Query().Where("type = ?", models.ClientTypeLocal).First(&client).Error; err != nil {
+		resp.OK(c, gin.H{
+			"exist": false,
+		})
+		return
+	}
+	resp.OK(c, gin.H{
+		"exist": true,
+	})
+}

@@ -5,6 +5,7 @@ import (
 	"ultraphx-core/internal/models"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func CheckJwtToken(token string) (bool, error) {
@@ -42,4 +43,16 @@ func CheckJwtToken(token string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func HashPassword(password string) (string, error) {
+	bcryptPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(bcryptPassword), nil
+}
+
+func ComparePassword(password, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }

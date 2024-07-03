@@ -16,6 +16,7 @@ type Client struct {
 	Description string          `json:"description"`
 	Status      ClientStatus    `json:"status"`
 	Type        ClientType      `json:"type"`
+	Payload     string          `json:"payload"`
 	Permissions []Permission    `gorm:"foreignKey:ClientID" json:"permissions"`
 	Collection  *CollectionInfo `gorm:"foreignKey:ClientID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"collection"`
 }
@@ -55,6 +56,8 @@ const (
 	ClientTypeSensor ClientType = "sensor"
 	// 传感器（主动）
 	ClientTypeSensorActive ClientType = "sensor_active"
+	// 本地客户端
+	ClientTypeLocal ClientType = "local"
 )
 
 type Permission struct {
