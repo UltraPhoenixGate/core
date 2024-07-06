@@ -49,9 +49,8 @@ func HandlePluginRegister(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.CreateJWEToken(auth.JwtPayload{
+	token, err := auth.CreateJWTToken(auth.JwtPayload{
 		ClientID: client.ID,
-		Name:     client.Name,
 		Type:     client.Type,
 	})
 
@@ -71,7 +70,7 @@ func HandlePluginCheckActive(c *gin.Context) {
 		resp.Error(c, "Unauthorized")
 		return
 	}
-	claims, err := auth.ParseJWEToken(jwtStr)
+	claims, err := auth.ParseJWTToken(jwtStr)
 	if err != nil {
 		resp.Error(c, err.Error())
 		return
@@ -303,9 +302,8 @@ func LoginLocalClient(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.CreateJWEToken(auth.JwtPayload{
+	token, err := auth.CreateJWTToken(auth.JwtPayload{
 		ClientID: client.ID,
-		Name:     client.Name,
 		Type:     client.Type,
 	})
 

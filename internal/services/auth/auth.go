@@ -9,7 +9,7 @@ import (
 )
 
 func CheckJwtToken(token string) (bool, error) {
-	claims, err := ParseJWEToken(token)
+	claims, err := ParseJWTToken(token)
 	if err != nil {
 		return false, err
 	}

@@ -58,6 +58,16 @@ func GetPrivateKey() *rsa.PrivateKey {
 	return priv
 }
 
+func GetJwtPrivateKey() string {
+	file, err := os.ReadFile("config/private.pem")
+	if err != nil {
+		logrus.WithError(err).Error("Failed to read private key file")
+		return ""
+	}
+
+	return string(file)
+}
+
 func isKeyPairExist() bool {
 	_, err := os.ReadFile("config/private.pem")
 	if err != nil {

@@ -20,7 +20,7 @@ func AuthMiddleware(c *gin.Context) {
 		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	claims, err := auth.ParseJWEToken(jwtStr)
+	claims, err := auth.ParseJWTToken(jwtStr)
 	if err != nil {
 		resp.ErrorWithCode(c, http.StatusUnauthorized, "Unauthorized")
 		return

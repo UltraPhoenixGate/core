@@ -37,9 +37,9 @@ func init() {
 	authRouter.POST("/client/remove_client", api.RemoveClient)
 	authRouter.POST("/client/set_client_status", api.SetClientStatus)
 
-	authRouter.POST("/client/local_client/setup", api.SetupLocalClient)
-	authRouter.POST("/client/local_client/login", api.LoginLocalClient)
-	authRouter.GET("/client/local_client/exist", api.IsLocalClientExist)
+	apiRouter.POST("/client/local_client/setup", api.SetupLocalClient)
+	apiRouter.POST("/client/local_client/login", api.LoginLocalClient)
+	apiRouter.GET("/client/local_client/exist", api.IsLocalClientExist)
 
 	authRouter.GET("/system/info", api.GetSystemInfo)
 	authRouter.POST("/system/set_resolution", api.SetResolution)
