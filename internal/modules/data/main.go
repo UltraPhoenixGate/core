@@ -45,7 +45,6 @@ func writeToVM(data string) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	logrus.Info("Writing to VM", data)
 	req, err := http.NewRequest("POST", vmURL, bytes.NewBufferString(data))
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create request")
@@ -58,14 +57,14 @@ func writeToVM(data string) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
-		logrus.Info("Data written to VM")
+		// logrus.Debug("Data written to VM")
 	} else {
 		logrus.WithField("status_code", resp.StatusCode).Error("Failed to write to VM")
 	}
 }
 
 func handleDataListener(h *hub.Hub, msg *hub.Message) {
-	logrus.Info("Data message received", msg)
+	// logrus.Debug("Data message received", msg)
 	// handle data message
 	payload := global.ParseSensorDataPayload(msg.Payload)
 
@@ -103,10 +102,6 @@ func Setup() {
 	// Proxy /vmdb/* to VMDB
 	authRouter.Any("/vmdb/*path", func(c *gin.Context) {
 		c.Request.URL.Path = c.Param("path")
-		// 删除默认响应头
-		// for k := range c.Writer.Header() {
-		// 	c.Writer.Header().Del(k)
-		// }
 		c.Writer.Header().Del("Access-Control-Allow-Origin")
 		proxy.ServeHTTP(c.Writer, c.Request)
 	})

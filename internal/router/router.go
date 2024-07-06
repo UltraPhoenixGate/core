@@ -17,6 +17,13 @@ func init() {
 	r.Use(CorsMiddleware)
 
 	apiRouter = r.Group("/api")
+	// ping
+	apiRouter.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+
 	authRouter = apiRouter.Group("/auth")
 	authRouter.Use(AuthMiddleware)
 
