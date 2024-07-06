@@ -42,6 +42,11 @@ func init() {
 	authRouter.GET("/client/local_client/exist", api.IsLocalClientExist)
 
 	authRouter.GET("/system/info", api.GetSystemInfo)
+	authRouter.POST("/system/set_resolution", api.SetResolution)
+	authRouter.GET("/system/get_resolutions", api.GetMonitorResolutions)
+	authRouter.GET("/system/check_network", api.CheckNetwork)
+	authRouter.GET("/system/get_networks", api.GetNetworkInfos)
+	authRouter.POST("/system/open_network_settings", api.OpenNetworkSettings)
 }
 
 func GetApiRouter() *gin.RouterGroup {

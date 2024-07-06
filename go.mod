@@ -13,6 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.18.2
 	github.com/use-go/onvif v0.0.9
+	github.com/vcraescu/go-xrandr v0.0.0-20201121120806-4e66d7925a73
 	golang.org/x/crypto v0.23.0
 	gorm.io/gorm v1.25.10
 )

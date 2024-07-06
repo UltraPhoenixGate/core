@@ -94,7 +94,7 @@ func runCollect(client *models.Client, h *hub.Hub) {
 		logrus.WithError(err).Error("Failed to update collection last collection time")
 	}
 
-	logrus.Infof("Data collected from collection %s", collection.CollectionEndpoint)
+	// logrus.Infof("Data collected from collection %s", collection.CollectionEndpoint)
 }
 
 type PullDataResult struct {
