@@ -315,7 +315,7 @@ func LoginLocalClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	resp.OK(c, gin.H{
 		"token": token,
 	})
 }
