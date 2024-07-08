@@ -32,6 +32,8 @@ type AlertRule struct {
 	Name        string               `json:"name" validate:"required"`
 	Summary     string               `json:"summary"`
 	Description string               `json:"description"`
+	SensorID    string               `json:"sensorId" validate:"required"`
+	Metric      string               `json:"metric" validate:"required"`
 	Level       AlertType            `json:"level" validate:"required"`
 	Conditions  []AlertRuleCondition `json:"conditions" validate:"required"`
 	Actions     []AlertAction        `json:"actions"`
