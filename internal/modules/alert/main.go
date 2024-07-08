@@ -25,7 +25,15 @@ func handleAlertRT(h *hub.Hub, msg *hub.Message) {
 			}
 
 			if isMatched(&condition, msg.Payload) {
-				// TODO: save alert to database
+				alert := AlertRecord{
+					ClientID: senderID,
+					RuleName: rule.Name,
+					Summary:  rule.Summary,
+					Level:    rule.Level,
+				}
+				if err := alert.Query().Create(&alert).Error; err != nil {
+					logrus.WithError(err).Error("Failed to save alert record")
+				}
 
 				// Broadcast alert
 				h.Broadcast(&hub.Message{
@@ -36,7 +44,32 @@ func handleAlertRT(h *hub.Hub, msg *hub.Message) {
 						Level:    string(rule.Level),
 					}),
 				})
+
+				go processAlertActions(rule, msg.Payload)
 			}
+		}
+	}
+}
+
+func processAlertActions(rule *AlertRule, payload map[string]interface{}) {
+	senderID := payload["senderID"].(string)
+	for _, action := range rule.Actions {
+		switch action.Type {
+		case AlertActionTypeEmail:
+			email := AlertActionPayloadEmail{}
+			mapstructure.Decode(action.Payload, &email)
+			// send email
+			logrus.Infof("Send email to %s: %s", email.To, "Alert"+senderID)
+		case AlertActionTypeSMS:
+			sms := AlertActionPayloadSMS{}
+			mapstructure.Decode(action.Payload, &sms)
+			// send sms
+			logrus.Infof("Send sms to %s: %s", sms.To, "Alert"+senderID)
+		case AlertActionTypeWebhook:
+			webhook := AlertActionPayloadWebhook{}
+			mapstructure.Decode(action.Payload, &webhook)
+			// send webhook
+			logrus.Infof("Send webhook to %s: %s", webhook.URL, "Alert"+senderID)
 		}
 	}
 }

@@ -11,6 +11,7 @@ type AlertRecord struct {
 	models.Model
 	ClientID string        `json:"clientID"`
 	RuleName string        `json:"ruleName"`
+	Summary  string        `json:"summary"`
 	Level    AlertType     `json:"level"`
 	Client   models.Client `json:"client" gorm:"foreignKey:ClientID;references:ID" `
 }
@@ -87,3 +88,15 @@ const (
 	AlertActionTypeSMS     AlertActionType = "sms"
 	AlertActionTypeWebhook AlertActionType = "webhook"
 )
+
+type AlertActionPayloadEmail struct {
+	To string `json:"to" validate:"required"`
+}
+
+type AlertActionPayloadSMS struct {
+	To string `json:"to" validate:"required"`
+}
+
+type AlertActionPayloadWebhook struct {
+	URL string `json:"url" validate:"required"`
+}
