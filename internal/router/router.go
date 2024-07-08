@@ -47,6 +47,14 @@ func init() {
 	authRouter.GET("/system/check_network", api.CheckNetwork)
 	authRouter.GET("/system/get_networks", api.GetNetworkInfos)
 	authRouter.POST("/system/open_network_settings", api.OpenNetworkSettings)
+
+	// serve static files
+	r.Static("/assets", "./web/assets")
+	r.StaticFile("/", "./web/index.html")
+	// 对于前端路由，需要重定向到index.html
+	r.NoRoute(func(c *gin.Context) {
+		c.File("./web/index.html")
+	})
 }
 
 func GetApiRouter() *gin.RouterGroup {
