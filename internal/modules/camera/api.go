@@ -52,20 +52,12 @@ func GetCameras(c *gin.Context) {
 }
 
 func DeleteCamera(c *gin.Context) {
-	var camera Camera
-	if err := c.ShouldBindJSON(&camera); err != nil {
-		resp.Error(c, "Invalid request")
-		return
-	}
-
-	if err := camera.Query().Delete(&camera).Error; err != nil {
+	id := c.Query("id")
+	if err := (&Camera{}).Query().Where("id = ?", id).Delete(&Camera{}).Error; err != nil {
 		resp.Error(c, err.Error())
 		return
 	}
-
-	resp.OK(c, resp.H{
-		"camera": camera,
-	})
+	resp.OK(c, nil)
 }
 
 func UpdateCamera(c *gin.Context) {
