@@ -264,7 +264,7 @@ func ScanOnvifDevices(c *gin.Context) {
 
 func GetOnvifDeviceInfo(c *gin.Context) {
 	var req struct {
-		Xaddr    string `json:"xaddr" binding:"required" form:"xaddr"`
+		Xaddr    string `json:"xAddr" binding:"required" form:"xAddr"`
 		User     string `json:"user" form:"user"`
 		Password string `json:"password" form:"password"`
 	}

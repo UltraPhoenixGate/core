@@ -17,5 +17,5 @@ func Setup() {
 	authRouter.GET("/camera/capture", GetCurrentFrame)
 	authRouter.GET("/camera/stream", OpenStream)
 	authRouter.GET("/camera/onvif/scan", ScanOnvifDevices)
-	authRouter.GET("/camera/onvif/info", GetOnvifDeviceInfo)
+	authRouter.POST("/camera/onvif/info", GetOnvifDeviceInfo)
 }
