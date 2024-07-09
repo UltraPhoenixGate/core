@@ -36,6 +36,7 @@ func init() {
 	authRouter.POST("/client/add_active_sensor", api.AddActiveSensor)
 	authRouter.POST("/client/remove_client", api.RemoveClient)
 	authRouter.POST("/client/set_client_status", api.SetClientStatus)
+	authRouter.POST("/client/scan_active_sensor", api.ScanActiveSensor)
 
 	apiRouter.POST("/client/local_client/setup", api.SetupLocalClient)
 	apiRouter.POST("/client/local_client/login", api.LoginLocalClient)

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"ultraphx-core/internal/models"
 	"ultraphx-core/internal/services/auth"
+	"ultraphx-core/internal/services/sensor"
 	"ultraphx-core/pkg/resp"
 
 	"github.com/gin-gonic/gin"
@@ -241,6 +242,13 @@ func SetClientStatus(c *gin.Context) {
 	}
 
 	resp.OK(c, client)
+}
+
+// 扫描主动传感器
+func ScanActiveSensor(c *gin.Context) {
+	// 在本地网络中搜索
+	devices := sensor.ScanSensors()
+	resp.OK(c, devices)
 }
 
 // 初始化本地客户端
