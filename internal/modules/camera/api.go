@@ -200,7 +200,7 @@ func OpenStream(c *gin.Context) {
 
 type OnvifDevice struct {
 	Name         string `json:"name"`
-	Xaddr        string `json:"xaddr"`
+	Xaddr        string `json:"xAddr"`
 	Manufacturer string `json:"manufacturer"`
 	Model        string `json:"model"`
 }
